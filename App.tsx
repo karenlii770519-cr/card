@@ -50,9 +50,9 @@ const StylistCard: React.FC<{ stylist: Stylist | null, selected: boolean, onClic
         <div className="w-full h-full bg-gradient-ig flex items-center justify-center text-white font-bold text-xs text-center leading-tight">不指定<br/>老師</div>
       )}
     </div>
-    <div>
+    <div className="flex-1 text-left">
       <h4 className={`font-bold text-xl ${selected ? 'text-[#8F2C2F]' : 'text-gray-700'}`}>{stylist?.name || '不指定美甲老師'}</h4>
-      <p className="text-xs text-gray-400 mt-1">由系統安排當前最合適的人選</p>
+      <p className="text-xs text-gray-400 mt-1">{stylist ? stylist.greeting || '專業美甲服務' : '由系統安排當前最合適的人選'}</p>
     </div>
   </div>
 );
@@ -70,8 +70,12 @@ const App: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     const loadData = async () => {
-      const data = await bookingService.fetchAppointments();
-      if (isMounted) setAppointments(data || []);
+      try {
+        const data = await bookingService.fetchAppointments();
+        if (isMounted) setAppointments(data || []);
+      } catch (e) {
+        console.error('Fetch error:', e);
+      }
     };
     loadData();
     return () => { isMounted = false; };
@@ -93,6 +97,7 @@ const App: React.FC = () => {
 
   const checkSlotAvailability = (time: string) => {
     if (!selectedService) return false;
+    
     const checkForStylist = (sid: string) => {
       const stylistBookings = appointments.filter(a => a.stylistId === sid && a.date === selectedDate);
       const requestedStart = parseInt(time.replace(':', ''));
@@ -111,29 +116,60 @@ const App: React.FC = () => {
         return requestedStart < bEnd && requestedEnd > bStart;
       });
     };
+    
     return selectedStylistId === 'any' ? STYLISTS.some(s => checkForStylist(s.id)) : checkForStylist(selectedStylistId);
   };
 
   const handleBookingConfirm = async () => {
     if (!selectedService || !selectedTime) return;
     setIsLoading(true);
+    
+    // 如果不指定，隨機分配一個有空的老師
+    let finalStylistId = selectedStylistId;
+    if (finalStylistId === 'any') {
+      const availableStylist = STYLISTS.find(s => {
+        const stylistBookings = appointments.filter(a => a.stylistId === s.id && a.date === selectedDate);
+        const requestedStart = parseInt(selectedTime.replace(':', ''));
+        const duration = selectedService.durationMinutes;
+        let endH = parseInt(selectedTime.split(':')[0]) + Math.floor(duration / 60);
+        let endM = parseInt(selectedTime.split(':')[1]) + (duration % 60);
+        if (endM >= 60) { endH += 1; endM -= 60; }
+        const requestedEnd = endH * 100 + endM;
+        return !stylistBookings.some(b => {
+          const bStart = parseInt(b.time.replace(':', ''));
+          const bDuration = b.durationMinutes || 60;
+          const bEndH = parseInt(b.time.split(':')[0]) + Math.floor((parseInt(b.time.split(':')[1]) + bDuration) / 60);
+          const bEndM = (parseInt(b.time.split(':')[1]) + bDuration) % 60;
+          const bEnd = bEndH * 100 + bEndM;
+          return requestedStart < bEnd && requestedEnd > bStart;
+        });
+      });
+      finalStylistId = availableStylist ? availableStylist.id : STYLISTS[0].id;
+    }
+
     const newAppointment: Appointment = {
       id: Math.random().toString(36).substr(2, 9),
       serviceId: selectedService.id,
-      stylistId: selectedStylistId === 'any' ? STYLISTS[0].id : selectedStylistId,
+      stylistId: finalStylistId,
       date: selectedDate,
       time: selectedTime,
       durationMinutes: selectedService.durationMinutes,
       userName: 'LINE用戶'
     };
-    const success = await bookingService.createAppointment(newAppointment);
-    if (success) {
-      setAppointments(prev => [...prev, newAppointment]);
-      setStep(BookingStep.SUCCESS);
-    } else {
-      alert('預約失敗，請確認網路連線或稍後再試');
+
+    try {
+      const success = await bookingService.createAppointment(newAppointment);
+      if (success) {
+        setAppointments(prev => [...prev, newAppointment]);
+        setStep(BookingStep.SUCCESS);
+      } else {
+        alert('預約失敗，請確認該時段是否已被預約。');
+      }
+    } catch (e) {
+      alert('系統異常，請稍後再試。');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
@@ -143,7 +179,7 @@ const App: React.FC = () => {
       <div className="fixed -top-24 -right-24 w-64 h-64 bg-orange-100/20 rounded-full blur-3xl -z-10"></div>
 
       <header className="flex justify-between items-center mb-10 animate-slide-up">
-        <div>
+        <div className="text-left">
           <h1 className="text-4xl font-black text-gray-800 tracking-tight">指要妳</h1>
           <p className="text-[10px] font-black text-[#D86B76] mt-1 tracking-[0.3em] uppercase opacity-70">Appointment System</p>
         </div>
@@ -160,14 +196,14 @@ const App: React.FC = () => {
           <div className="fixed inset-0 bg-white/60 z-50 flex items-center justify-center backdrop-blur-md">
             <div className="text-center p-10 bg-white rounded-3xl shadow-2xl">
               <div className="w-10 h-10 border-4 border-pink-100 border-t-[#D86B76] rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-[#8F2C2F] font-bold text-sm tracking-widest">請稍候...</p>
+              <p className="text-[#8F2C2F] font-bold text-sm tracking-widest">正在處理中...</p>
             </div>
           </div>
         )}
 
         {showMyBookings ? (
           <div className="animate-slide-up">
-            <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">您的預約紀錄</h2>
+            <h2 className="text-2xl font-black text-gray-800 mb-8 px-1 text-left">您的預約紀錄</h2>
             {appointments.length === 0 ? (
               <div className="text-center py-24 bg-white/50 rounded-[2.5rem] border-2 border-dashed border-pink-100">
                 <p className="text-gray-400 italic font-medium">尚無預約資料</p>
@@ -175,9 +211,10 @@ const App: React.FC = () => {
             ) : (
               appointments.map(appt => (
                 <div key={appt.id} className="bg-white p-6 rounded-3xl shadow-soft mb-5 border border-pink-50 flex justify-between items-center">
-                  <div>
+                  <div className="text-left">
                     <h3 className="font-bold text-[#8F2C2F] mb-1">{SERVICES.find(s => s.id === appt.serviceId)?.name}</h3>
                     <p className="text-xs text-gray-400">📅 {appt.date} <span className="mx-2 opacity-30">|</span> ⏰ {appt.time}</p>
+                    <p className="text-[10px] text-gray-400 mt-1">美甲師：{STYLISTS.find(s => s.id === appt.stylistId)?.name || '未指定'}</p>
                   </div>
                   <span className="text-[10px] font-black px-3 py-1 bg-green-50 text-green-500 rounded-full uppercase">已確認</span>
                 </div>
@@ -189,7 +226,7 @@ const App: React.FC = () => {
             {step !== BookingStep.SUCCESS && <ProgressBar step={step} />}
 
             {step === BookingStep.SERVICE && (
-              <div className="space-y-10 pb-24">
+              <div className="space-y-10 pb-24 text-left">
                 {Object.entries(CATEGORY_LABELS).map(([catKey, label]) => (
                   <div key={catKey}>
                     <h3 className="text-[11px] font-black text-[#D86B76] mb-5 px-1 tracking-[0.2em] uppercase">{label}</h3>
@@ -219,7 +256,7 @@ const App: React.FC = () => {
 
             {step === BookingStep.STYLIST && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">選擇美甲老師</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1 text-left">選擇美甲老師</h2>
                 <StylistCard stylist={null} selected={selectedStylistId === 'any'} onClick={() => setSelectedStylistId('any')} />
                 {STYLISTS.map(stylist => (
                   <StylistCard key={stylist.id} stylist={stylist} selected={selectedStylistId === stylist.id} onClick={() => setSelectedStylistId(stylist.id)} />
@@ -252,7 +289,7 @@ const App: React.FC = () => {
 
             {step === BookingStep.TIME && (
               <div className="space-y-8">
-                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">選擇時段</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1 text-left">選擇時段</h2>
                 <div className="grid grid-cols-3 gap-4">
                   {timeSlots.map(time => {
                     const available = checkSlotAvailability(time);
@@ -292,7 +329,7 @@ const App: React.FC = () => {
 
             {step === BookingStep.CONFIRM && (
               <div className="space-y-8">
-                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">確認預約明細</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1 text-left">確認預約明細</h2>
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 space-y-6">
                   <div className="flex justify-between items-start border-b border-gray-50 pb-4">
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">服務項目</span>
