@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { BookingStep, Service, Stylist, Appointment } from './types';
 import { SERVICES, STYLISTS, CATEGORY_LABELS } from './constants';
 import { bookingService } from './services/api';
 
-// --- 進度條 ---
 const ProgressBar: React.FC<{ step: BookingStep }> = ({ step }) => {
   const percentage = (step / 5) * 100;
   return (
@@ -16,7 +16,6 @@ const ProgressBar: React.FC<{ step: BookingStep }> = ({ step }) => {
   );
 };
 
-// --- 服務項目卡片 ---
 const ServiceCard: React.FC<{ service: Service, selected: boolean, onClick: () => void }> = ({ service, selected, onClick }) => (
   <div 
     onClick={onClick}
@@ -36,7 +35,6 @@ const ServiceCard: React.FC<{ service: Service, selected: boolean, onClick: () =
   </div>
 );
 
-// --- 美甲師卡片 ---
 const StylistCard: React.FC<{ stylist: Stylist | null, selected: boolean, onClick: () => void }> = ({ stylist, selected, onClick }) => (
   <div 
     onClick={onClick}
@@ -71,9 +69,17 @@ const App: React.FC = () => {
   const [showMyBookings, setShowMyBookings] = useState(false);
 
   useEffect(() => {
-    if (bookingService.isConfigured()) {
-      bookingService.fetchAppointments().then(setAppointments);
-    }
+    let isMounted = true;
+    const loadInitialData = async () => {
+      try {
+        const data = await bookingService.fetchAppointments();
+        if (isMounted) setAppointments(data || []);
+      } catch (err) {
+        console.error("Failed to load data", err);
+      }
+    };
+    loadInitialData();
+    return () => { isMounted = false; };
   }, []);
 
   const handleNext = () => setStep(prev => Math.min(prev + 1, 6));
@@ -103,7 +109,10 @@ const App: React.FC = () => {
 
       return !stylistBookings.some(b => {
         const bStart = parseInt(b.time.replace(':', ''));
-        const bEnd = (parseInt(b.time.split(':')[0]) + Math.floor((parseInt(b.time.split(':')[1]) + b.durationMinutes) / 60)) * 100 + ((parseInt(b.time.split(':')[1]) + b.durationMinutes) % 60);
+        const bDuration = b.durationMinutes || 60;
+        const bEndH = parseInt(b.time.split(':')[0]) + Math.floor((parseInt(b.time.split(':')[1]) + bDuration) / 60);
+        const bEndM = (parseInt(b.time.split(':')[1]) + bDuration) % 60;
+        const bEnd = bEndH * 100 + bEndM;
         return requestedStart < bEnd && requestedEnd > bStart;
       });
     };
@@ -134,7 +143,6 @@ const App: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto min-h-screen px-6 py-12 relative overflow-x-hidden">
-      {/* 裝飾 */}
       <div className="fixed -bottom-24 -left-24 w-64 h-64 bg-pink-100/30 rounded-full blur-3xl -z-10"></div>
       <div className="fixed -top-24 -right-24 w-64 h-64 bg-orange-100/20 rounded-full blur-3xl -z-10"></div>
 
@@ -298,14 +306,14 @@ const App: React.FC = () => {
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">美甲老師</span>
                     <span className="text-gray-700 font-bold">{currentStylist?.name || '現場分配'}</span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center border-b border-gray-50 pb-4">
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">預約時間</span>
                     <span className="text-gray-700 font-bold underline decoration-pink-200 underline-offset-4">{selectedDate} {selectedTime}</span>
                   </div>
                   <div className="pt-8 border-t-2 border-[#D86B76]/10 flex justify-between items-center">
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">費用</span>
                     <span className="text-3xl font-black text-[#D86B76]">
-                      {selectedService?.price === 'quote' ? '現場報價' : `$${selectedService?.price}`}
+                       {selectedService?.price === 'quote' ? '現場報價' : `$${selectedService?.price}`}
                     </span>
                   </div>
                 </div>
@@ -342,3 +350,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
