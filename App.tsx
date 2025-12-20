@@ -3,7 +3,7 @@ import { BookingStep, Service, Stylist, Appointment } from './types';
 import { SERVICES, STYLISTS, CATEGORY_LABELS } from './constants';
 import { bookingService } from './services/api';
 
-// --- 子組件：進度條 ---
+// --- 進度條 ---
 const ProgressBar: React.FC<{ step: BookingStep }> = ({ step }) => {
   const percentage = (step / 5) * 100;
   return (
@@ -16,7 +16,7 @@ const ProgressBar: React.FC<{ step: BookingStep }> = ({ step }) => {
   );
 };
 
-// --- 子組件：服務項目卡片 ---
+// --- 服務項目卡片 ---
 const ServiceCard: React.FC<{ service: Service, selected: boolean, onClick: () => void }> = ({ service, selected, onClick }) => (
   <div 
     onClick={onClick}
@@ -28,7 +28,7 @@ const ServiceCard: React.FC<{ service: Service, selected: boolean, onClick: () =
   >
     <div className="flex-1">
       <h4 className={`font-bold text-lg ${selected ? 'text-[#8F2C2F]' : 'text-gray-700'}`}>{service.name}</h4>
-      <p className="text-xs text-gray-400 mt-1">時長約 {service.durationMinutes} 分鐘</p>
+      <p className="text-xs text-gray-400 mt-1">預計時長：{service.durationMinutes} 分鐘</p>
     </div>
     <div className={`font-black text-lg ${selected ? 'text-[#D86B76]' : 'text-[#8F2C2F]'}`}>
       {service.price === 'quote' ? '現場報價' : `$${service.price}`}
@@ -36,7 +36,7 @@ const ServiceCard: React.FC<{ service: Service, selected: boolean, onClick: () =
   </div>
 );
 
-// --- 子組件：美甲師卡片 ---
+// --- 美甲師卡片 ---
 const StylistCard: React.FC<{ stylist: Stylist | null, selected: boolean, onClick: () => void }> = ({ stylist, selected, onClick }) => (
   <div 
     onClick={onClick}
@@ -54,8 +54,8 @@ const StylistCard: React.FC<{ stylist: Stylist | null, selected: boolean, onClic
       )}
     </div>
     <div>
-      <h4 className={`font-bold text-xl ${selected ? 'text-[#8F2C2F]' : 'text-gray-700'}`}>{stylist?.name || '不指定老師'}</h4>
-      <p className="text-xs text-gray-400 mt-1">為您安排當前最合適的人選</p>
+      <h4 className={`font-bold text-xl ${selected ? 'text-[#8F2C2F]' : 'text-gray-700'}`}>{stylist?.name || '不指定美甲老師'}</h4>
+      <p className="text-xs text-gray-400 mt-1">由系統為您安排當前時段最合適的人選</p>
     </div>
   </div>
 );
@@ -134,11 +134,10 @@ const App: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto min-h-screen px-6 py-12 relative overflow-x-hidden">
-      {/* 背景裝飾 */}
+      {/* 裝飾 */}
       <div className="fixed -bottom-24 -left-24 w-64 h-64 bg-pink-100/30 rounded-full blur-3xl -z-10"></div>
       <div className="fixed -top-24 -right-24 w-64 h-64 bg-orange-100/20 rounded-full blur-3xl -z-10"></div>
 
-      {/* 標題 */}
       <header className="flex justify-between items-center mb-10">
         <div className="animate-slide-up">
           <h1 className="text-4xl font-black text-gray-800 tracking-tight">指要妳</h1>
@@ -157,21 +156,21 @@ const App: React.FC = () => {
           <div className="fixed inset-0 bg-white/60 z-50 flex items-center justify-center backdrop-blur-md">
             <div className="text-center p-10 bg-white rounded-3xl shadow-2xl">
               <div className="w-10 h-10 border-4 border-pink-100 border-t-[#D86B76] rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-[#8F2C2F] font-bold tracking-widest text-sm">正在處理中...</p>
+              <p className="text-[#8F2C2F] font-bold text-sm tracking-widest">正在處理中...</p>
             </div>
           </div>
         )}
 
         {showMyBookings ? (
           <div className="animate-slide-up">
-            <h2 className="text-2xl font-black text-gray-800 mb-8">您的預約記錄</h2>
+            <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">您的預約</h2>
             {appointments.length === 0 ? (
               <div className="text-center py-24 bg-white/50 rounded-[2.5rem] border-2 border-dashed border-pink-100">
-                <p className="text-gray-400 italic font-medium">目前還沒有任何預約喔！</p>
+                <p className="text-gray-400 italic font-medium">尚無任何預約資料</p>
               </div>
             ) : (
               appointments.map(appt => (
-                <div key={appt.id} className="bg-white p-6 rounded-3xl shadow-soft mb-5 border border-pink-50 flex justify-between items-center">
+                <div key={appt.id} className="bg-white p-6 rounded-3xl shadow-soft mb-5 border border-pink-50 flex justify-between items-center group">
                   <div>
                     <h3 className="font-bold text-[#8F2C2F] mb-1">{SERVICES.find(s => s.id === appt.serviceId)?.name}</h3>
                     <p className="text-xs text-gray-400">📅 {appt.date} <span className="mx-2 opacity-30">|</span> ⏰ {appt.time}</p>
@@ -216,7 +215,7 @@ const App: React.FC = () => {
 
             {step === BookingStep.STYLIST && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-black text-gray-800 mb-8">選擇您的美甲師</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">選擇您的美甲老師</h2>
                 <StylistCard stylist={null} selected={selectedStylistId === 'any'} onClick={() => setSelectedStylistId('any')} />
                 {STYLISTS.map(stylist => (
                   <StylistCard key={stylist.id} stylist={stylist} selected={selectedStylistId === stylist.id} onClick={() => setSelectedStylistId(stylist.id)} />
@@ -230,7 +229,7 @@ const App: React.FC = () => {
 
             {step === BookingStep.DATE && (
               <div className="space-y-8">
-                <h2 className="text-2xl font-black text-gray-800 mb-2">預約日期</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-2 px-1">預約日期</h2>
                 <div className="bg-white rounded-[3rem] p-12 shadow-soft text-center border border-pink-50">
                   <input 
                     type="date" 
@@ -249,7 +248,7 @@ const App: React.FC = () => {
 
             {step === BookingStep.TIME && (
               <div className="space-y-8">
-                <h2 className="text-2xl font-black text-gray-800 mb-8">可預約時段</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">選擇時段</h2>
                 <div className="grid grid-cols-3 gap-4">
                   {timeSlots.map(time => {
                     const available = checkSlotAvailability(time);
@@ -289,30 +288,30 @@ const App: React.FC = () => {
 
             {step === BookingStep.CONFIRM && (
               <div className="space-y-8">
-                <h2 className="text-2xl font-black text-gray-800 mb-8">預約明細確認</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">預約明細確認</h2>
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 space-y-8 relative overflow-hidden">
                   <div className="flex justify-between items-start border-b border-gray-50 pb-4">
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">項目</span>
-                    <span className="text-[#8F2C2F] font-black text-right">{selectedService?.name}</span>
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">服務項目</span>
+                    <span className="text-[#8F2C2F] font-black text-right max-w-[60%]">{selectedService?.name}</span>
                   </div>
                   <div className="flex justify-between items-center border-b border-gray-50 pb-4">
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">老師</span>
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">美甲老師</span>
                     <span className="text-gray-700 font-bold">{currentStylist?.name || '現場分配'}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">時間</span>
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">預約時間</span>
                     <span className="text-gray-700 font-bold underline decoration-pink-200 underline-offset-4">{selectedDate} {selectedTime}</span>
                   </div>
                   <div className="pt-8 border-t-2 border-[#D86B76]/10 flex justify-between items-center">
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">預估費用</span>
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">費用</span>
                     <span className="text-3xl font-black text-[#D86B76]">
                       {selectedService?.price === 'quote' ? '現場報價' : `$${selectedService?.price}`}
                     </span>
                   </div>
                 </div>
                 <div className="pt-10 flex gap-4">
-                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft active:scale-95 transition-all">修改</button>
-                  <button onClick={handleBookingConfirm} className="flex-[2] py-6 rounded-[2rem] font-black text-white bg-gradient-ig shadow-xl active:scale-95 transition-all">確認無誤，預約！</button>
+                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft active:scale-95 transition-all">修改內容</button>
+                  <button onClick={handleBookingConfirm} className="flex-[2] py-6 rounded-[2rem] font-black text-white bg-gradient-ig shadow-xl active:scale-95 transition-all">確認預約！</button>
                 </div>
               </div>
             )}
@@ -321,7 +320,7 @@ const App: React.FC = () => {
               <div className="text-center py-10 animate-slide-up">
                 <div className="w-28 h-28 bg-gradient-ig rounded-full flex items-center justify-center text-white text-5xl mx-auto mb-10 shadow-2xl ring-8 ring-pink-50">✓</div>
                 <h2 className="text-4xl font-black text-gray-800 mb-4">預約完成！</h2>
-                <p className="text-gray-400 mb-12 px-10 leading-relaxed font-medium">感謝您的預約，系統已為您成功保留時段。期待與您見面！</p>
+                <p className="text-gray-400 mb-12 px-10 leading-relaxed font-medium">系統已為您成功保留時段。期待您的光臨！</p>
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 mb-12 text-left relative overflow-hidden">
                    <div className="absolute top-0 right-0 w-2 h-full bg-gradient-ig"></div>
                   <p className="text-[#D86B76] font-black text-xl mb-2">{selectedService?.name}</p>
