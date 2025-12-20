@@ -3,11 +3,10 @@ import { Appointment } from '../types';
 
 /**
  * 📢 操作說明：
- * 1. 在 GAS 點擊「部署」 -> 「新部署」
- * 2. 選擇「網頁應用程式」，誰可以存取選「所有人」
- * 3. 部署後，將得到的網址貼在下方的 GAS_URL
+ * 1. 在 GAS 部署後，將得到的網址貼在下方的 GAS_URL
+ * 2. 範例：https://script.google.com/macros/s/AKfycb...你的ID.../exec
  */
-const GAS_URL = ''; // <--- 在這裡貼上你的 https://script.google.com/macros/s/.../exec
+const GAS_URL = ''; // <--- 在這裡貼上您的 Google Apps Script 網址
 
 export const bookingService = {
   isConfigured(): boolean {
@@ -20,7 +19,8 @@ export const bookingService = {
       
       const res = await fetch(`${GAS_URL}?action=getAppointments`);
       if (!res.ok) throw new Error('連線失敗');
-      return await res.json();
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
     } catch (e) {
       console.error('取得預約失敗', e);
       return [];
@@ -36,6 +36,10 @@ export const bookingService = {
 
       await fetch(GAS_URL, {
         method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           action: 'create',
           data: appointment
@@ -54,6 +58,10 @@ export const bookingService = {
       
       await fetch(GAS_URL, {
         method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           action: 'cancel',
           id: id
