@@ -12,12 +12,14 @@
         --brand-wine: #8F2C2F;
         --brand-pink: #D86B76;
         --brand-orange: #F58529;
-        --base-gray-bg: #F3F4F6;
+        --cream-pink: #FFF9F9;
       }
       
       body {
         font-family: 'Noto Sans TC', sans-serif;
-        background-color: var(--base-gray-bg);
+        background-color: var(--cream-pink);
+        color: #4A4A4A;
+        margin: 0;
       }
       
       .bg-gradient-ig {
@@ -30,25 +32,17 @@
         -webkit-text-fill-color: transparent;
       }
       
-      .border-brand-pink {
-        border-color: #D86B76;
+      .shadow-soft {
+        box-shadow: 0 10px 30px -10px rgba(143, 44, 47, 0.1);
       }
       
-      .text-brand-wine {
-        color: #8F2C2F;
-      }
-      
-      .app-bg-gray {
-        background-color: #F3F4F6;
-      }
-      
-      @keyframes slideIn {
-        from { opacity: 0; transform: translateY(10px); }
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
       
-      .animate-fade-in {
-        animation: slideIn 0.4s ease-out forwards;
+      .animate-slide-up {
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
     </style>
 
