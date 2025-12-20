@@ -1,24 +1,25 @@
-
 import { Appointment } from '../types';
 
 /**
  * 📢 操作說明：
  * 1. 在 GAS 部署後，將得到的網址貼在下方的 GAS_URL
- * 2. 範例：https://script.google.com/macros/s/AKfycb...你的ID.../exec
  */
-const GAS_URL = ''; // <--- 在這裡貼上您的 Google Apps Script 網址
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyxQ0gsvtDoMIph3HUQfv80JpgZRG-yCjEZ2TWUULJ09xmIOpre51FheAwHFIlOnIU/exec'; // <--- 拿到第一步的網址後，請貼在這裡
 
 export const bookingService = {
   isConfigured(): boolean {
-    return GAS_URL.startsWith('https://script.google.com');
+    return typeof GAS_URL === 'string' && GAS_URL.length > 20 && GAS_URL.startsWith('https://script.google.com/macros/s/AKfycbyxQ0gsvtDoMIph3HUQfv80JpgZRG-yCjEZ2TWUULJ09xmIOpre51FheAwHFIlOnIU/exec');
   },
 
   async fetchAppointments(): Promise<Appointment[]> {
     try {
-      if (!this.isConfigured()) return [];
+      if (!this.isConfigured()) {
+        console.warn('GAS_URL 未設定或格式錯誤，目前為模擬模式');
+        return [];
+      }
       
       const res = await fetch(`${GAS_URL}?action=getAppointments`);
-      if (!res.ok) throw new Error('連線失敗');
+      if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : [];
     } catch (e) {
@@ -30,15 +31,15 @@ export const bookingService = {
   async createAppointment(appointment: Appointment): Promise<boolean> {
     try {
       if (!this.isConfigured()) {
-        console.warn('GAS_URL 未設定，目前為模擬模式');
-        return true;
+        console.warn('GAS_URL 未設定，模擬預約成功');
+        return new Promise((resolve) => setTimeout(() => resolve(true), 1500));
       }
 
       await fetch(GAS_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain',
         },
         body: JSON.stringify({
           action: 'create',
@@ -60,7 +61,7 @@ export const bookingService = {
         method: 'POST',
         mode: 'no-cors',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain',
         },
         body: JSON.stringify({
           action: 'cancel',
