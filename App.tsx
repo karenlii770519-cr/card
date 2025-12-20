@@ -52,7 +52,7 @@ const StylistCard: React.FC<{ stylist: Stylist | null, selected: boolean, onClic
     </div>
     <div>
       <h4 className={`font-bold text-xl ${selected ? 'text-[#8F2C2F]' : 'text-gray-700'}`}>{stylist?.name || '不指定美甲老師'}</h4>
-      <p className="text-xs text-gray-400 mt-1">由系統為您安排當前時段最合適的人選</p>
+      <p className="text-xs text-gray-400 mt-1">由系統安排當前最合適的人選</p>
     </div>
   </div>
 );
@@ -70,12 +70,8 @@ const App: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     const loadData = async () => {
-      try {
-        const data = await bookingService.fetchAppointments();
-        if (isMounted) setAppointments(data || []);
-      } catch (e) {
-        console.error("Fetch error:", e);
-      }
+      const data = await bookingService.fetchAppointments();
+      if (isMounted) setAppointments(data || []);
     };
     loadData();
     return () => { isMounted = false; };
@@ -142,6 +138,7 @@ const App: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto min-h-screen px-6 py-12 relative">
+      {/* Decorative Blobs */}
       <div className="fixed -bottom-24 -left-24 w-64 h-64 bg-pink-100/30 rounded-full blur-3xl -z-10"></div>
       <div className="fixed -top-24 -right-24 w-64 h-64 bg-orange-100/20 rounded-full blur-3xl -z-10"></div>
 
@@ -163,7 +160,7 @@ const App: React.FC = () => {
           <div className="fixed inset-0 bg-white/60 z-50 flex items-center justify-center backdrop-blur-md">
             <div className="text-center p-10 bg-white rounded-3xl shadow-2xl">
               <div className="w-10 h-10 border-4 border-pink-100 border-t-[#D86B76] rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-[#8F2C2F] font-bold text-sm tracking-widest">載入中...</p>
+              <p className="text-[#8F2C2F] font-bold text-sm tracking-widest">請稍候...</p>
             </div>
           </div>
         )}
@@ -173,7 +170,7 @@ const App: React.FC = () => {
             <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">您的預約紀錄</h2>
             {appointments.length === 0 ? (
               <div className="text-center py-24 bg-white/50 rounded-[2.5rem] border-2 border-dashed border-pink-100">
-                <p className="text-gray-400 italic font-medium">尚無預約</p>
+                <p className="text-gray-400 italic font-medium">尚無預約資料</p>
               </div>
             ) : (
               appointments.map(appt => (
@@ -222,13 +219,13 @@ const App: React.FC = () => {
 
             {step === BookingStep.STYLIST && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">選擇老師</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">選擇美甲老師</h2>
                 <StylistCard stylist={null} selected={selectedStylistId === 'any'} onClick={() => setSelectedStylistId('any')} />
                 {STYLISTS.map(stylist => (
                   <StylistCard key={stylist.id} stylist={stylist} selected={selectedStylistId === stylist.id} onClick={() => setSelectedStylistId(stylist.id)} />
                 ))}
                 <div className="pt-10 flex gap-4">
-                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft transition-all">返回</button>
+                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft">返回</button>
                   <button onClick={handleNext} className="flex-[2] py-6 rounded-[2rem] font-black text-white bg-gradient-ig shadow-xl active:scale-95 transition-all">選擇日期</button>
                 </div>
               </div>
@@ -247,7 +244,7 @@ const App: React.FC = () => {
                   />
                 </div>
                 <div className="pt-10 flex gap-4">
-                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft transition-all">返回</button>
+                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft">返回</button>
                   <button onClick={handleNext} className="flex-[2] py-6 rounded-[2rem] font-black text-white bg-gradient-ig shadow-xl active:scale-95 transition-all">選擇時段</button>
                 </div>
               </div>
@@ -287,7 +284,7 @@ const App: React.FC = () => {
                       selectedTime ? 'bg-gradient-ig active:scale-95' : 'bg-gray-200 cursor-not-allowed opacity-50'
                     }`}
                   >
-                    確認明細
+                    下一步：預約確認
                   </button>
                 </div>
               </div>
@@ -295,7 +292,7 @@ const App: React.FC = () => {
 
             {step === BookingStep.CONFIRM && (
               <div className="space-y-8">
-                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">預約明細確認</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">確認預約明細</h2>
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 space-y-6">
                   <div className="flex justify-between items-start border-b border-gray-50 pb-4">
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">服務項目</span>
@@ -310,7 +307,7 @@ const App: React.FC = () => {
                     <span className="text-gray-700 font-bold underline decoration-pink-200 underline-offset-4">{selectedDate} {selectedTime}</span>
                   </div>
                   <div className="pt-4 flex justify-between items-center">
-                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">費用</span>
+                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">預計費用</span>
                     <span className="text-3xl font-black text-[#D86B76]">
                        {selectedService?.price === 'quote' ? '現場報價' : `$${selectedService?.price}`}
                     </span>
@@ -327,16 +324,16 @@ const App: React.FC = () => {
               <div className="text-center py-10 animate-slide-up">
                 <div className="w-28 h-28 bg-gradient-ig rounded-full flex items-center justify-center text-white text-5xl mx-auto mb-10 shadow-2xl ring-8 ring-pink-50">✓</div>
                 <h2 className="text-3xl font-black text-gray-800 mb-4">預約完成！</h2>
-                <p className="text-gray-400 mb-12 px-10">系統已成功為您保留時段。期待您的光臨！</p>
+                <p className="text-gray-400 mb-12 px-10">期待與您見面。您可以隨時在「我的紀錄」查看預約。</p>
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 mb-12 text-left">
                   <p className="text-[#D86B76] font-black text-xl mb-1">{selectedService?.name}</p>
                   <p className="text-gray-600 font-bold text-lg">{selectedDate} {selectedTime}</p>
                 </div>
                 <button 
                   onClick={() => window.location.reload()}
-                  className="w-full py-6 rounded-[2rem] font-black text-[#8F2C2F] bg-white border-2 border-pink-50 shadow-soft"
+                  className="w-full py-6 rounded-[2rem] font-black text-[#8F2C2F] bg-white border-2 border-pink-50 shadow-soft active:scale-95 transition-all"
                 >
-                  回首頁
+                  回到首頁
                 </button>
               </div>
             )}
