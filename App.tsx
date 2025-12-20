@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { BookingStep, Service, Stylist, Appointment } from './types';
 import { SERVICES, STYLISTS, CATEGORY_LABELS } from './constants';
@@ -70,15 +69,15 @@ const App: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const loadInitialData = async () => {
+    const loadData = async () => {
       try {
         const data = await bookingService.fetchAppointments();
         if (isMounted) setAppointments(data || []);
-      } catch (err) {
-        console.error("Failed to load data", err);
+      } catch (e) {
+        console.error("Fetch error:", e);
       }
     };
-    loadInitialData();
+    loadData();
     return () => { isMounted = false; };
   }, []);
 
@@ -136,26 +135,26 @@ const App: React.FC = () => {
       setAppointments(prev => [...prev, newAppointment]);
       setStep(BookingStep.SUCCESS);
     } else {
-      alert('預約失敗，請重新嘗試');
+      alert('預約失敗，請確認網路連線或稍後再試');
     }
     setIsLoading(false);
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-screen px-6 py-12 relative overflow-x-hidden">
+    <div className="max-w-md mx-auto min-h-screen px-6 py-12 relative">
       <div className="fixed -bottom-24 -left-24 w-64 h-64 bg-pink-100/30 rounded-full blur-3xl -z-10"></div>
       <div className="fixed -top-24 -right-24 w-64 h-64 bg-orange-100/20 rounded-full blur-3xl -z-10"></div>
 
-      <header className="flex justify-between items-center mb-10">
-        <div className="animate-slide-up">
+      <header className="flex justify-between items-center mb-10 animate-slide-up">
+        <div>
           <h1 className="text-4xl font-black text-gray-800 tracking-tight">指要妳</h1>
-          <p className="text-[10px] font-black text-[#D86B76] mt-1 tracking-[0.3em] uppercase opacity-70">Just For You Nail Salon</p>
+          <p className="text-[10px] font-black text-[#D86B76] mt-1 tracking-[0.3em] uppercase opacity-70">Appointment System</p>
         </div>
         <button 
           onClick={() => setShowMyBookings(!showMyBookings)}
           className="text-xs font-bold px-5 py-2.5 rounded-full bg-white shadow-soft text-[#8F2C2F] active:scale-95 transition-all"
         >
-          {showMyBookings ? '返回預約' : '我的預約'}
+          {showMyBookings ? '返回' : '我的紀錄'}
         </button>
       </header>
 
@@ -164,26 +163,26 @@ const App: React.FC = () => {
           <div className="fixed inset-0 bg-white/60 z-50 flex items-center justify-center backdrop-blur-md">
             <div className="text-center p-10 bg-white rounded-3xl shadow-2xl">
               <div className="w-10 h-10 border-4 border-pink-100 border-t-[#D86B76] rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-[#8F2C2F] font-bold text-sm tracking-widest">正在處理中...</p>
+              <p className="text-[#8F2C2F] font-bold text-sm tracking-widest">載入中...</p>
             </div>
           </div>
         )}
 
         {showMyBookings ? (
           <div className="animate-slide-up">
-            <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">您的預約</h2>
+            <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">您的預約紀錄</h2>
             {appointments.length === 0 ? (
               <div className="text-center py-24 bg-white/50 rounded-[2.5rem] border-2 border-dashed border-pink-100">
-                <p className="text-gray-400 italic font-medium">尚無任何預約資料</p>
+                <p className="text-gray-400 italic font-medium">尚無預約</p>
               </div>
             ) : (
               appointments.map(appt => (
-                <div key={appt.id} className="bg-white p-6 rounded-3xl shadow-soft mb-5 border border-pink-50 flex justify-between items-center group">
+                <div key={appt.id} className="bg-white p-6 rounded-3xl shadow-soft mb-5 border border-pink-50 flex justify-between items-center">
                   <div>
                     <h3 className="font-bold text-[#8F2C2F] mb-1">{SERVICES.find(s => s.id === appt.serviceId)?.name}</h3>
                     <p className="text-xs text-gray-400">📅 {appt.date} <span className="mx-2 opacity-30">|</span> ⏰ {appt.time}</p>
                   </div>
-                  <span className="text-[10px] font-black px-3 py-1 bg-green-50 text-green-500 rounded-full uppercase">Confirmed</span>
+                  <span className="text-[10px] font-black px-3 py-1 bg-green-50 text-green-500 rounded-full uppercase">已確認</span>
                 </div>
               ))
             )}
@@ -193,7 +192,7 @@ const App: React.FC = () => {
             {step !== BookingStep.SUCCESS && <ProgressBar step={step} />}
 
             {step === BookingStep.SERVICE && (
-              <div className="space-y-10">
+              <div className="space-y-10 pb-24">
                 {Object.entries(CATEGORY_LABELS).map(([catKey, label]) => (
                   <div key={catKey}>
                     <h3 className="text-[11px] font-black text-[#D86B76] mb-5 px-1 tracking-[0.2em] uppercase">{label}</h3>
@@ -207,7 +206,7 @@ const App: React.FC = () => {
                     ))}
                   </div>
                 ))}
-                <div className="sticky bottom-6 pt-4">
+                <div className="fixed bottom-6 left-0 right-0 px-6 max-w-md mx-auto z-20">
                   <button 
                     disabled={!selectedService}
                     onClick={handleNext}
@@ -223,22 +222,22 @@ const App: React.FC = () => {
 
             {step === BookingStep.STYLIST && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">選擇您的美甲老師</h2>
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">選擇老師</h2>
                 <StylistCard stylist={null} selected={selectedStylistId === 'any'} onClick={() => setSelectedStylistId('any')} />
                 {STYLISTS.map(stylist => (
                   <StylistCard key={stylist.id} stylist={stylist} selected={selectedStylistId === stylist.id} onClick={() => setSelectedStylistId(stylist.id)} />
                 ))}
                 <div className="pt-10 flex gap-4">
-                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft active:scale-95 transition-all">返回</button>
+                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft transition-all">返回</button>
                   <button onClick={handleNext} className="flex-[2] py-6 rounded-[2rem] font-black text-white bg-gradient-ig shadow-xl active:scale-95 transition-all">選擇日期</button>
                 </div>
               </div>
             )}
 
             {step === BookingStep.DATE && (
-              <div className="space-y-8">
-                <h2 className="text-2xl font-black text-gray-800 mb-2 px-1">預約日期</h2>
-                <div className="bg-white rounded-[3rem] p-12 shadow-soft text-center border border-pink-50">
+              <div className="space-y-8 text-center">
+                <h2 className="text-2xl font-black text-gray-800 mb-8 px-1 text-left">選擇日期</h2>
+                <div className="bg-white rounded-[3rem] p-12 shadow-soft border border-pink-50">
                   <input 
                     type="date" 
                     min={new Date().toISOString().split('T')[0]}
@@ -248,7 +247,7 @@ const App: React.FC = () => {
                   />
                 </div>
                 <div className="pt-10 flex gap-4">
-                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft active:scale-95 transition-all">返回</button>
+                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft transition-all">返回</button>
                   <button onClick={handleNext} className="flex-[2] py-6 rounded-[2rem] font-black text-white bg-gradient-ig shadow-xl active:scale-95 transition-all">選擇時段</button>
                 </div>
               </div>
@@ -280,7 +279,7 @@ const App: React.FC = () => {
                   })}
                 </div>
                 <div className="pt-10 flex gap-4">
-                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft active:scale-95 transition-all">返回</button>
+                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft">返回</button>
                   <button 
                     disabled={!selectedTime}
                     onClick={handleNext} 
@@ -288,7 +287,7 @@ const App: React.FC = () => {
                       selectedTime ? 'bg-gradient-ig active:scale-95' : 'bg-gray-200 cursor-not-allowed opacity-50'
                     }`}
                   >
-                    最後確認
+                    確認明細
                   </button>
                 </div>
               </div>
@@ -297,7 +296,7 @@ const App: React.FC = () => {
             {step === BookingStep.CONFIRM && (
               <div className="space-y-8">
                 <h2 className="text-2xl font-black text-gray-800 mb-8 px-1">預約明細確認</h2>
-                <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 space-y-8 relative overflow-hidden">
+                <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 space-y-6">
                   <div className="flex justify-between items-start border-b border-gray-50 pb-4">
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">服務項目</span>
                     <span className="text-[#8F2C2F] font-black text-right max-w-[60%]">{selectedService?.name}</span>
@@ -310,7 +309,7 @@ const App: React.FC = () => {
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">預約時間</span>
                     <span className="text-gray-700 font-bold underline decoration-pink-200 underline-offset-4">{selectedDate} {selectedTime}</span>
                   </div>
-                  <div className="pt-8 border-t-2 border-[#D86B76]/10 flex justify-between items-center">
+                  <div className="pt-4 flex justify-between items-center">
                     <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">費用</span>
                     <span className="text-3xl font-black text-[#D86B76]">
                        {selectedService?.price === 'quote' ? '現場報價' : `$${selectedService?.price}`}
@@ -318,8 +317,8 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 <div className="pt-10 flex gap-4">
-                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft active:scale-95 transition-all">修改內容</button>
-                  <button onClick={handleBookingConfirm} className="flex-[2] py-6 rounded-[2rem] font-black text-white bg-gradient-ig shadow-xl active:scale-95 transition-all">確認預約！</button>
+                  <button onClick={handleBack} className="flex-1 py-6 rounded-[2rem] font-black text-gray-400 bg-white shadow-soft">修改</button>
+                  <button onClick={handleBookingConfirm} className="flex-[2] py-6 rounded-[2rem] font-black text-white bg-gradient-ig shadow-xl active:scale-95 transition-all">確認預約</button>
                 </div>
               </div>
             )}
@@ -327,16 +326,15 @@ const App: React.FC = () => {
             {step === BookingStep.SUCCESS && (
               <div className="text-center py-10 animate-slide-up">
                 <div className="w-28 h-28 bg-gradient-ig rounded-full flex items-center justify-center text-white text-5xl mx-auto mb-10 shadow-2xl ring-8 ring-pink-50">✓</div>
-                <h2 className="text-4xl font-black text-gray-800 mb-4">預約完成！</h2>
-                <p className="text-gray-400 mb-12 px-10 leading-relaxed font-medium">系統已為您成功保留時段。期待您的光臨！</p>
-                <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 mb-12 text-left relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-2 h-full bg-gradient-ig"></div>
-                  <p className="text-[#D86B76] font-black text-xl mb-2">{selectedService?.name}</p>
+                <h2 className="text-3xl font-black text-gray-800 mb-4">預約完成！</h2>
+                <p className="text-gray-400 mb-12 px-10">系統已成功為您保留時段。期待您的光臨！</p>
+                <div className="bg-white rounded-[2.5rem] p-10 shadow-soft border border-pink-50 mb-12 text-left">
+                  <p className="text-[#D86B76] font-black text-xl mb-1">{selectedService?.name}</p>
                   <p className="text-gray-600 font-bold text-lg">{selectedDate} {selectedTime}</p>
                 </div>
                 <button 
                   onClick={() => window.location.reload()}
-                  className="w-full py-6 rounded-[2rem] font-black text-[#8F2C2F] bg-white border-2 border-pink-50 shadow-soft active:scale-95 transition-all"
+                  className="w-full py-6 rounded-[2rem] font-black text-[#8F2C2F] bg-white border-2 border-pink-50 shadow-soft"
                 >
                   回首頁
                 </button>
@@ -350,4 +348,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
