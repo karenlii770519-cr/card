@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>指要妳 Just ForYou | 線上預約</title>
+    <title>指要妳 Just ForYou | 線上預約 (v2.0)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -124,7 +124,6 @@
         const SHOP_CONFIG = { closedWeekday: 3, holidays: ["2026-01-01"], stylistLeaves: {'s1':[],'s2':[],'s3':[]} };
         const CATEGORIES = [ {id:'hand',name:'手部光療',icon:'💅'}, {id:'foot',name:'足部光療',icon:'🦶'}, {id:'remove',name:'卸甲',icon:'✨'}, {id:'care',name:'保養',icon:'🌿'} ];
         
-        // ⚠️ 您的服務列表文案，完全保留 ⚠️
         const SERVICES = [
             { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
             { category: 'hand', id: 'h2', name: '【手部】貓眼', price: 600, time: 90 }, 
@@ -141,15 +140,15 @@
             { category: 'foot', id: 'f3', name: '【足部】相簿 $600 款', price: 600, time: 70 },
             { category: 'foot', id: 'f4', name: '【足部】相簿 $700 款', price: 700, time: 80 },
             { category: 'foot', id: 'f5', name: '【足部】自帶圖', price: '依報價', time: 120 },
-            { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 },
+            { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 200, time: 30 },
             { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
             { category: 'remove', id: 'm1', name: '【組合】手部卸甲+續作', price: '依款式', time: 90 },
             { category: 'remove', id: 'm2', name: '【組合】足部卸甲+續作', price: '依款式', time: 90 },
-            { category: 'remove', id: 'm4', name: '【組合】手足同時卸甲', price: 600, time: 60 },
+            { category: 'remove', id: 'm4', name: '【組合】手/足單色光療+保養', price: 1100, time: 90 },
             { category: 'care', id: 'c1', name: '【保養】手部保養', price: 600, time: 45 },
             { category: 'care', id: 'c4', name: '【保養】足部修養', price: '現場報價', time: 30 }
         ];
-        // ⚠️ 您指定的設計師連結，已整合 ⚠️
+
         const STYLISTS = [ 
             { id: 'any', name: '不指定設計師', img: '' },
             { id: 's1', name: '虹', img: 'https://www.dropbox.com/scl/fi/p5yp0ff6r36hyv5314hqu/p1.jpg?rlkey=2r9l80w2q1ljzn2utoyev9gux&st=vjzu6w4h&raw=1' }, 
@@ -161,27 +160,38 @@
         let bookedTimes = []; 
 
         window.onload = async function() {
+            // 🚨 優先執行：先把畫面畫出來，確保時間選單不會消失！
+            renderCategories(); 
+            renderStylists(); 
+            renderTimeSlots();
+            
+            // 預設日期設定
+            const dateInput = document.getElementById('dateInput');
+            dateInput.min = new Date().toISOString().split('T')[0];
+            dateInput.addEventListener('change', (e) => handleDateOrStylistChange());
+
             try {
+                // 嘗試連線 LIFF
                 await liff.init({ liffId: LIFF_ID });
                 if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
                 
-                // ✅ 這裡現在是安全的，因為上面的 HTML 已經補回 userName 了
-                document.getElementById('userName').innerText = profile.displayName;
-                if(profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
+                // 🚨 防當機機制：檢查欄位是否存在才填寫
+                const nameEl = document.getElementById('userName');
+                if(nameEl) nameEl.innerText = profile.displayName;
+                
+                const imgEl = document.getElementById('userImg');
+                if(imgEl && profile.pictureUrl) imgEl.src = profile.pictureUrl;
+                
                 currentData.userId = profile.userId;
-                
-                renderCategories(); renderStylists(); renderTimeSlots();
-                
-                const dateInput = document.getElementById('dateInput');
-                dateInput.min = new Date().toISOString().split('T')[0];
-                dateInput.addEventListener('change', (e) => handleDateOrStylistChange());
 
+                // 成功載入
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
+
             } catch (err) {
-                // 如果還是有錯，會跳窗顯示，而不是卡死
-                alert("啟動錯誤: " + err);
+                // 萬一 LIFF 連線失敗，仍然顯示畫面讓使用者操作 (雖然不能送出)
+                alert("LIFF 連線錯誤 (請確認 LIFF ID 設定)：" + err);
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
             }
