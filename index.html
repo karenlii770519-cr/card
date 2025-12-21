@@ -183,8 +183,7 @@
             { id: 's2', name: '敬', img: 'https://www.dropbox.com/scl/fi/70tckw1bxps5sjph2ht27/p2.jpg?rlkey=js9dm1zc1h7yduwzha40trtvk&st=zmfv5fb2&raw=1' },
             { id: 's3', name: '芮綺', img: 'https://www.dropbox.com/scl/fi/fyonnvr9fhc2bni36ro22/p3.jpg?rlkey=06u8rsnb4n2pik7nnrdhfaqdb&st=bwzev9h4&raw=1' }
         ];
-
-        let currentData = { category: null, service: null, stylist: STYLISTS[0], date: new Date().toISOString().split('T')[0], time: null, phone: '', userId: '', userImg: '' };
+let currentData = { category: null, service: null, stylist: STYLISTS[0], date: new Date().toISOString().split('T')[0], time: null, phone: '', userId: '', userImg: '' };
 
         window.onload = async function() {
             try {
@@ -259,4 +258,102 @@
 
         function renderStylists() {
             document.getElementById('stylistList').innerHTML = STYLISTS.map(s => `
-                <div onclick="selectStylist('${s.id}')" id="stylist-${s.id}" class="p-3 bg-white border-2 border-transparent rounded-2xl
+                <div onclick="selectStylist('${s.id}')" id="stylist-${s.id}" class="p-3 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex items-center mb-2 shadow-sm">
+                    <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-100">
+                        ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-[10px] text-gray-500 font-bold">不指定</div>'}
+                    </div>
+                    <div class="font-bold text-gray-700">${s.name}</div>
+                </div>`).join('');
+            selectStylist('any');
+        }
+
+        function renderTimeSlots() {
+            const times = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+            document.getElementById('timeSlots').innerHTML = times.map(t => `
+                <button onclick="selectTime('${t}')" id="time-${t.replace(':','')}" class="py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-500 hover:border-[#ea5548] hover:text-[#ea5548] transition-all bg-white">${t}</button>
+            `).join('');
+        }
+
+        function selectService(id) {
+            document.querySelectorAll('#serviceList > div').forEach(el => el.classList.remove('selected-card'));
+            document.getElementById(`service-${id}`).classList.add('selected-card');
+            currentData.service = SERVICES.find(s => s.id === id);
+            setTimeout(() => changeStep(3), 300); 
+        }
+
+        function selectStylist(id) {
+            document.querySelectorAll('#stylistList > div').forEach(el => el.classList.remove('selected-card'));
+            document.getElementById(`stylist-${id}`).classList.add('selected-card');
+            currentData.stylist = STYLISTS.find(s => s.id === id);
+            const dateInput = document.getElementById('dateInput');
+            if (dateInput.value) checkDateAvailability(dateInput.value);
+        }
+
+        function selectTime(time) {
+            document.querySelectorAll('#timeSlots > button').forEach(el => { el.classList.remove('bg-[#ea5548]', 'text-white', 'border-transparent'); el.classList.add('text-gray-500', 'border-gray-200'); });
+            const btn = document.getElementById(`time-${time.replace(':','')}`);
+            btn.classList.remove('text-gray-500', 'border-gray-200');
+            btn.classList.add('bg-[#ea5548]', 'text-white', 'border-transparent');
+            currentData.time = time;
+        }
+
+        function validateAndNext() {
+            const phone = document.getElementById('userPhone').value;
+            if (!currentData.date || !currentData.time) { alert('請選擇日期與時段！'); return; }
+            if (!phone || phone.length < 8) { alert('請輸入正確的聯絡電話！'); return; }
+            currentData.phone = phone;
+            changeStep(5); 
+        }
+
+        function changeStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            document.getElementById('progressBar').style.width = `${step * 20}%`;
+            
+            if(step === 5) {
+                document.getElementById('confirmService').innerText = currentData.service.name;
+                document.getElementById('confirmStylist').innerText = currentData.stylist.name;
+                const dateVal = document.getElementById('dateInput').value;
+                document.getElementById('confirmDateTime').innerText = `${dateVal} ${currentData.time}`;
+                document.getElementById('confirmName').innerText = document.getElementById('userName').innerText;
+                document.getElementById('confirmPhone').innerText = currentData.phone;
+            }
+        }
+
+        async function submitBooking() {
+            const btn = document.querySelector('#step5 button');
+            const originalText = btn.innerText;
+            btn.innerText = "資料傳送中...";
+            btn.disabled = true;
+
+            const bookingData = {
+                created_at: new Date().toLocaleString(),
+                name: document.getElementById('userName').innerText,
+                service: currentData.service.name,
+                stylist: currentData.stylist.name,
+                date: document.getElementById('dateInput').value,
+                time: currentData.time,
+                price: currentData.service.price,
+                phone: currentData.phone,
+                userId: currentData.userId,
+                userImg: currentData.userImg
+            };
+
+            try {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(bookingData), mode: 'no-cors', headers: { 'Content-Type': 'application/json' } });
+                if (liff.isInClient()) {
+                    await liff.sendMessages([{
+                        type: 'text',
+                        text: `【預約成功】\n姓名：${bookingData.name}\n電話：${bookingData.phone}\n項目：${bookingData.service}\n老師：${bookingData.stylist}\n時間：${bookingData.date} ${bookingData.time}\n費用：${typeof bookingData.price === 'number' ? '$'+bookingData.price : bookingData.price}`
+                    }]);
+                }
+                changeStep('Success');
+            } catch (err) {
+                alert("連線錯誤，請重試");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
