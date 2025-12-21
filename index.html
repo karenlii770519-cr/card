@@ -279,10 +279,53 @@
                 document.getElementById('confirmDateTime').innerText = `${currentData.date} ${currentData.time.split(",")[0]}`;
             }
         }
-        async function submitBooking() {
-            const btn = document.querySelector('#step5 button'); btn.innerText = "傳送中...";
-            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(currentData), mode: 'no-cors', headers: {'Content-Type': 'application/json'} });
-            if (liff.isInClient()) { await liff.sendMessages([{type:'text', text:`預約成功\n項目：${currentData.service.name}\n時間：${currentData.date} ${currentData.time.split(",")[0]}`}]); } changeStep('Success'); } catch(e) { alert("錯誤: "+e); btn.innerText="送出"; }
+      async function submitBooking() {
+            const btn = document.querySelector('#step5 button'); 
+            btn.innerText = "整理資料中...";
+            btn.disabled = true; // 避免重複按
+
+            // 1. 🧹 資料清洗：把複雜的物件轉成簡單的文字
+            // 這樣 Google Sheet 就不會出現 {id=...} 這種亂碼了
+            const payload = {
+                // 修正：明確抓取頁面上的名字
+                name: document.getElementById('userName').innerText || 'Guest',
+                phone: currentData.phone,
+                // 修正：只傳送「服務名稱」，不要傳整包
+                service: currentData.service ? currentData.service.name : '未選擇',
+                // 修正：只傳送「老師名字」
+                stylist: currentData.stylist ? currentData.stylist.name : '不指定',
+                date: currentData.date,
+                time: currentData.time,
+                // 修正：明確傳送價格
+                price: currentData.service ? currentData.service.price : 0,
+                userId: currentData.userId,
+                // 修正：傳送頭貼 (如果有的話)
+                userImg: document.getElementById('userImg').src || ''
+            };
+
+            try { 
+                btn.innerText = "傳送中...";
+                
+                // 2. 發送清洗過後的 payload，而不是原本的 currentData
+                await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify(payload), 
+                    mode: 'no-cors', 
+                    headers: {'Content-Type': 'application/json'} 
+                });
+                
+                if (liff.isInClient()) { 
+                    await liff.sendMessages([{
+                        type:'text', 
+                        text:`【預約成功】\n姓名：${payload.name}\n項目：${payload.service}\n老師：${payload.stylist}\n時間：${payload.date} ${payload.time.split(",")[0]}`
+                    }]); 
+                } 
+                changeStep('Success'); 
+            } catch(e) { 
+                alert("傳送錯誤: " + e); 
+                btn.innerText = "確認送出";
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
