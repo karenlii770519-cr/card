@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>指要妳 nail salon | 線上預約系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
       
@@ -39,17 +41,111 @@
       .animate-slide-up {
         animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
+      
+      /* 控制顯示的類別 */
+      .hidden { display: none !important; }
     </style>
- 
 </head>
   <body>
-    <div id="root">
-      <!-- 初始 Loading 畫面 -->
-      <div style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; gap: 20px;">
-        <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #D86B76; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-        <span style="color: #D86B76; font-weight: bold; font-size: 14px; letter-spacing: 2px;">系統準備中...</span>
-      </div>
+    <div id="loading" style="display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; gap: 20px;">
+      <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #D86B76; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+      <span style="color: #D86B76; font-weight: bold; font-size: 14px; letter-spacing: 2px;">系統準備中...</span>
     </div>
-    <script type="module" src="./index.tsx"></script>
+
+    <div id="main" class="hidden animate-slide-up p-6">
+        
+        <div class="flex items-center gap-4 mb-8">
+            <img id="userPicture" src="https://via.placeholder.com/150" class="w-16 h-16 rounded-full border-2 border-white shadow-md object-cover" alt="User">
+            <div>
+                <p class="text-sm text-gray-500">Welcome back,</p>
+                <h1 id="userName" class="text-xl font-bold text-[#8F2C2F]">Guest</h1>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-soft mb-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-ig opacity-10 rounded-bl-full"></div>
+            <h2 class="text-lg font-bold mb-4 text-[#8F2C2F]">開始預約</h2>
+            
+            <form id="bookingForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">選擇服務</label>
+                    <select class="w-full bg-[#FFF9F9] border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#D86B76] outline-none">
+                        <option>單色凝膠手部 (NT$ 800)</option>
+                        <option>深層手部保養 (NT$ 1200)</option>
+                        <option>足部光療 (NT$ 1000)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">預約日期</label>
+                    <input type="date" class="w-full bg-[#FFF9F9] border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#D86B76] outline-none">
+                </div>
+
+                <button type="button" onclick="sendMessage()" class="w-full bg-gradient-ig text-white font-bold py-3 rounded-xl shadow-lg transform active:scale-95 transition-all mt-4">
+                    立即預約
+                </button>
+            </form>
+        </div>
+
+        <div class="text-center text-xs text-gray-400 mt-8">
+            <p>指要妳 Nail Salon</p>
+        </div>
+    </div>
+
+    <script>
+      // 1. 設定你的 LIFF ID
+      const MY_LIFF_ID = "2008649114-uMkSDYgW";
+
+      // 2. 初始化 LIFF
+      async function initializeLiff() {
+        try {
+          await liff.init({ liffId: MY_LIFF_ID });
+          
+          // 檢查是否已登入
+          if (!liff.isLoggedIn()) {
+             liff.login();
+             return;
+          }
+
+          // 取得使用者資料
+          const profile = await liff.getProfile();
+          document.getElementById('userName').innerText = profile.displayName;
+          if (profile.pictureUrl) {
+              document.getElementById('userPicture').src = profile.pictureUrl;
+          }
+
+          // 隱藏 Loading，顯示主畫面
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('main').classList.remove('hidden');
+
+        } catch (error) {
+          alert("初始化失敗: " + error.message);
+          console.error(error);
+          // 就算失敗也顯示畫面，方便除錯
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('main').classList.remove('hidden');
+        }
+      }
+
+      // 3. 模擬發送訊息的功能
+      function sendMessage() {
+        if (liff.isInClient()) {
+            liff.sendMessages([{
+                'type': 'text',
+                'text': '您好，我想要預約美甲服務！'
+            }]).then(function() {
+                alert('預約訊息已傳送！');
+                liff.closeWindow();
+            }).catch(function(error) {
+                alert('訊息傳送失敗: ' + error);
+            });
+        } else {
+            alert("此功能只能在 LINE App 內使用");
+        }
+      }
+
+      // 執行初始化
+      window.onload = initializeLiff;
+    </script>
   </body>
 </html>
