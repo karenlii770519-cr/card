@@ -137,6 +137,7 @@
     <script>
         // --- 1. 基本設定區 ---
         const LIFF_ID = "2008649114-uMkSDYgW"; 
+        // 👇 這就是你給我的 Google Script 網址
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxWDbcuW9YBQC-sI6_q208gL7hdniUxG8GGn4QuAmNqZ89yHSSr-C-_4mQWeO2KTSE/exec";
 
         // --- 2. 假表與排班設定 ---
@@ -145,19 +146,19 @@
             
             // 2026 年台灣國定假日表 (預估版)
             holidays: [
-                "2026-01-01", // 元旦
-                "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-22", // 農曆過年
-                "2026-02-28", // 228
+                "2026-01-01", 
+                "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-22", // 過年
+                "2026-02-28", 
                 "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", // 清明
-                "2026-05-01", // 勞動節
+                "2026-05-01", 
                 "2026-06-19", "2026-06-20", "2026-06-21", // 端午
                 "2026-09-25", "2026-09-26", "2026-09-27", // 中秋
-                "2026-10-10"  // 國慶
+                "2026-10-10"
             ],
 
             // 美甲師個人休假表
             stylistLeaves: {
-                's1': ['2026-01-10'], // 範例：s1 在這天休假
+                's1': [], 
                 's2': [], 
                 's3': []
             }
@@ -172,27 +173,19 @@
 
         const STYLISTS = [
             { id: 'any', name: '不指定設計師', img: '' },
-            { id: 's1', name: 'S1 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karen' },
-            { id: 's2', name: 'S2 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica' },
-            { id: 's3', name: 'S3 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe' }
+            { id: 's1', name: 'Karen 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karen' },
+            { id: 's2', name: 'Jessica 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica' },
+            { id: 's3', name: 'Zoe 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe' }
         ];
 
-        // --- 狀態變數 ---
-        let currentData = {
-            service: null,
-            stylist: STYLISTS[0],
-            date: new Date().toISOString().split('T')[0],
-            time: null
-        };
+        let currentData = { service: null, stylist: STYLISTS[0], date: new Date().toISOString().split('T')[0], time: null };
 
         // --- 初始化 ---
         window.onload = async function() {
             try {
                 await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                    return;
-                }
+                if (!liff.isLoggedIn()) { liff.login(); return; }
+                
                 const profile = await liff.getProfile();
                 document.getElementById('userName').innerText = profile.displayName;
                 if(profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
@@ -201,15 +194,11 @@
                 renderStylists();
                 renderTimeSlots();
                 
-                // 設定日期監聽
                 const dateInput = document.getElementById('dateInput');
                 dateInput.value = currentData.date;
                 dateInput.min = new Date().toISOString().split('T')[0];
-                dateInput.addEventListener('change', function(e) {
-                    checkDateAvailability(e.target.value);
-                });
+                dateInput.addEventListener('change', function(e) { checkDateAvailability(e.target.value); });
 
-                // 顯示畫面
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
                 document.getElementById('app').classList.add('animate-fade-in');
@@ -221,28 +210,18 @@
             }
         };
 
-        // --- 核心邏輯：檢查日期是否可預約 ---
         function checkDateAvailability(dateStr) {
             const dateObj = new Date(dateStr);
             const dayOfWeek = dateObj.getDay(); 
             const nextBtn = document.getElementById('btnStep3Next');
-            
             let errorMsg = null;
 
-            // 1. 檢查每週固定公休
-            if (dayOfWeek === SHOP_CONFIG.closedWeekday) {
-                errorMsg = "抱歉，本店每週三固定公休，請選擇其他日期。";
-            }
+            if (dayOfWeek === SHOP_CONFIG.closedWeekday) errorMsg = "抱歉，本店每週三固定公休。";
+            if (SHOP_CONFIG.holidays.includes(dateStr)) errorMsg = "抱歉，該日為國定假日/店休日。";
             
-            // 2. 檢查國定假日/全店公休
-            if (SHOP_CONFIG.holidays.includes(dateStr)) {
-                errorMsg = "抱歉，該日為國定假日/店休日。";
-            }
-
-            // 3. 檢查指定設計師休假
             const sid = currentData.stylist.id;
             if (sid !== 'any' && SHOP_CONFIG.stylistLeaves[sid] && SHOP_CONFIG.stylistLeaves[sid].includes(dateStr)) {
-                errorMsg = `抱歉，${currentData.stylist.name} 該日排休，請改期或選擇其他老師。`;
+                errorMsg = `抱歉，${currentData.stylist.name} 該日排休。`;
             }
 
             if (errorMsg) {
@@ -262,44 +241,32 @@
             }
         }
 
-        // --- 渲染函式 ---
         function renderServices() {
-            const container = document.getElementById('serviceList');
-            container.innerHTML = SERVICES.map(s => `
+            document.getElementById('serviceList').innerHTML = SERVICES.map(s => `
                 <div onclick="selectService('${s.id}')" id="service-${s.id}" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex justify-between items-center mb-3">
-                    <div>
-                        <div class="font-bold text-gray-700">${s.name}</div>
-                        <div class="text-xs text-gray-400 mt-1">約 ${s.time} 分鐘</div>
-                    </div>
+                    <div><div class="font-bold text-gray-700">${s.name}</div><div class="text-xs text-gray-400 mt-1">約 ${s.time} 分鐘</div></div>
                     <div class="font-bold text-[#8F2C2F]">${typeof s.price === 'number' ? '$'+s.price : s.price}</div>
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         function renderStylists() {
-            const container = document.getElementById('stylistList');
-            container.innerHTML = STYLISTS.map(s => `
+            document.getElementById('stylistList').innerHTML = STYLISTS.map(s => `
                 <div onclick="selectStylist('${s.id}')" id="stylist-${s.id}" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex items-center mb-2">
                     <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-100">
                         ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-xs text-gray-500 font-bold">不指定</div>'}
                     </div>
                     <div class="font-bold text-gray-700">${s.name}</div>
-                </div>
-            `).join('');
+                </div>`).join('');
             selectStylist('any');
         }
 
         function renderTimeSlots() {
             const times = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
-            const container = document.getElementById('timeSlots');
-            container.innerHTML = times.map(t => `
-                <button onclick="selectTime('${t}')" id="time-${t.replace(':','')}" class="py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-500 hover:border-[#ea5548] hover:text-[#ea5548] transition-all">
-                    ${t}
-                </button>
+            document.getElementById('timeSlots').innerHTML = times.map(t => `
+                <button onclick="selectTime('${t}')" id="time-${t.replace(':','')}" class="py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-500 hover:border-[#ea5548] hover:text-[#ea5548] transition-all">${t}</button>
             `).join('');
         }
 
-        // --- 選擇邏輯 ---
         function selectService(id) {
             document.querySelectorAll('#serviceList > div').forEach(el => el.classList.remove('selected-card'));
             document.getElementById(`service-${id}`).classList.add('selected-card');
@@ -311,25 +278,17 @@
             document.querySelectorAll('#stylistList > div').forEach(el => el.classList.remove('selected-card'));
             document.getElementById(`stylist-${id}`).classList.add('selected-card');
             currentData.stylist = STYLISTS.find(s => s.id === id);
-            
-            // 換老師時重新檢查日期
             const dateInput = document.getElementById('dateInput');
             if (dateInput.value) checkDateAvailability(dateInput.value);
         }
 
         function selectTime(time) {
             if(!currentData.date) { alert("請先選擇日期！"); return; }
-            
-            document.querySelectorAll('#timeSlots > button').forEach(el => {
-                el.classList.remove('bg-[#ea5548]', 'text-white', 'border-transparent');
-                el.classList.add('text-gray-500', 'border-gray-200');
-            });
+            document.querySelectorAll('#timeSlots > button').forEach(el => { el.classList.remove('bg-[#ea5548]', 'text-white', 'border-transparent'); el.classList.add('text-gray-500', 'border-gray-200'); });
             const btn = document.getElementById(`time-${time.replace(':','')}`);
             btn.classList.remove('text-gray-500', 'border-gray-200');
             btn.classList.add('bg-[#ea5548]', 'text-white', 'border-transparent');
-            
             currentData.time = time;
-            
             const nextBtn = document.getElementById('btnStep3Next');
             nextBtn.disabled = false;
             nextBtn.classList.remove('bg-gray-300');
@@ -340,7 +299,6 @@
             document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`step${step}`).classList.remove('hidden');
             document.getElementById('progressBar').style.width = `${step * 25}%`;
-
             if(step === 4) {
                 document.getElementById('confirmService').innerText = currentData.service.name;
                 document.getElementById('confirmStylist').innerText = currentData.stylist.name;
@@ -350,7 +308,6 @@
             }
         }
 
-        // --- 送出預約 ---
         async function submitBooking() {
             const btn = document.querySelector('#step4 button');
             const originalText = btn.innerText;
@@ -368,7 +325,7 @@
             };
 
             try {
-                // 1. 寫入 Google Sheets
+                // 送出到 Google Sheets
                 await fetch(GAS_URL, {
                     method: 'POST',
                     body: JSON.stringify(bookingData),
@@ -376,16 +333,14 @@
                     headers: { 'Content-Type': 'application/json' }
                 });
 
-                // 2. LINE 通知
+                // LINE 通知
                 if (liff.isInClient()) {
                     await liff.sendMessages([{
                         type: 'text',
                         text: `【預約成功】\n姓名：${bookingData.name}\n項目：${bookingData.service}\n老師：${bookingData.stylist}\n時間：${bookingData.date} ${bookingData.time}\n費用：${typeof bookingData.price === 'number' ? '$'+bookingData.price : bookingData.price}`
                     }]);
                 }
-
                 changeStep('Success');
-
             } catch (err) {
                 alert("連線錯誤: " + err);
                 btn.innerText = originalText;
