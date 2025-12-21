@@ -4,11 +4,11 @@ import { Appointment } from '../types';
  * 📢 操作說明：
  * 1. 在 GAS 部署後，將得到的網址貼在下方的 GAS_URL
  */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyxQ0gsvtDoMIph3HUQfv80JpgZRG-yCjEZ2TWUULJ09xmIOpre51FheAwHFIlOnIU/exec'; // <--- 拿到第一步的網址後，請貼在這裡
+const GAS_URL = 'https://script.google.com/macros/s/AKfycby6mKSsfT3Ci-Rc97cbcMAU6t6tV1QNDrJ1ONv_X7uOsLt9L-mQQ9uT_6uSzwXfl4w/exec'; // <--- 拿到第一步的網址後，請貼在這裡
 
 export const bookingService = {
   isConfigured(): boolean {
-    return typeof GAS_URL === 'string' && GAS_URL.length > 20 && GAS_URL.startsWith('https://script.google.com/macros/s/AKfycbyxQ0gsvtDoMIph3HUQfv80JpgZRG-yCjEZ2TWUULJ09xmIOpre51FheAwHFIlOnIU/exec');
+    return typeof GAS_URL === 'string' && GAS_URL.length > 20 && GAS_URL.startsWith('https://script.google.com/macros/s/AKfycby6mKSsfT3Ci-Rc97cbcMAU6t6tV1QNDrJ1ONv_X7uOsLt9L-mQQ9uT_6uSzwXfl4w/exec');
   },
 
   async fetchAppointments(): Promise<Appointment[]> {
