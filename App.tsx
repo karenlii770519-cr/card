@@ -94,13 +94,19 @@ const App: React.FC = () => {
             setLineUser({ name: profile.displayName, picture: profile.pictureUrl });
           }
         }
-      } catch (err) { console.warn('LIFF init failed', err); }
+      } catch (err) { 
+        console.warn('LIFF 初始化失敗', err); 
+      }
 
       try {
-        const { appointments, leaves } = await bookingService.fetchInitialData();
-        setAppointments(appointments);
-        setLeaves(leaves);
-      } catch (e) { console.error('Fetch error:', e); } finally { setIsLoading(false); }
+        const data = await bookingService.fetchInitialData();
+        setAppointments(data.appointments || []);
+        setLeaves(data.leaves || []);
+      } catch (e) { 
+        console.error('資料載入錯誤', e); 
+      } finally { 
+        setIsLoading(false); 
+      }
     };
     initializeApp();
   }, []);
