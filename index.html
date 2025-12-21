@@ -20,7 +20,7 @@
 
     <div id="loading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#8F2C2F] mb-4"></div>
-        <p class="text-[#8F2C2F] font-bold"> 載入中請耐心等待...</p>
+        <p class="text-[#8F2C2F] font-bold">系統載入中...</p>
     </div>
 
     <div id="app" class="max-w-md mx-auto min-h-screen relative hidden">
@@ -29,7 +29,10 @@
             <div><h1 class="text-xl font-bold text-gray-700">指要妳 <span class="text-[#ea5548] text-sm block">Just ForYou Nail salon</span></h1></div>
             <div class="flex items-center gap-3">
                 <button onclick="showMyBookings()" class="text-xs bg-gray-100 px-3 py-2 rounded-full font-bold text-gray-600 hover:bg-gray-200">📋 我的預約</button>
-                <img id="userImg" src="https://via.placeholder.com/40" class="w-8 h-8 rounded-full border border-gray-200">
+                <div class="flex items-center gap-2">
+                    <img id="userImg" src="https://via.placeholder.com/40" class="w-8 h-8 rounded-full border border-gray-200">
+                    <span id="userName" class="text-xs font-bold text-gray-500">Guest</span>
+                </div>
             </div>
         </header>
 
@@ -109,21 +112,19 @@
                 <h2 class="text-lg font-bold text-gray-700 border-l-4 border-[#8F2C2F] pl-3">我的預約紀錄</h2>
                 <button onclick="closeMyBookings()" class="text-sm text-gray-500 font-bold px-3 py-1 border rounded-lg">關閉</button>
             </div>
-            <div id="myBookingList" class="space-y-3 pb-8">
-                <p class="text-center text-gray-400 mt-10">載入中...</p>
-            </div>
+            <div id="myBookingList" class="space-y-3 pb-8"></div>
         </div>
 
     </div>
 
     <script>
         const LIFF_ID = "2008649114-uMkSDYgW"; 
-        // ⚠️ 請填入新部署的網址 ⚠️
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzQN8MHKglutmDGOOlcgDVbCswoYJR3hzfDBaiIMSYcisShfOehiE8TTTSqedds_2g/exec";
 
         const SHOP_CONFIG = { closedWeekday: 3, holidays: ["2026-01-01"], stylistLeaves: {'s1':[],'s2':[],'s3':[]} };
         const CATEGORIES = [ {id:'hand',name:'手部光療',icon:'💅'}, {id:'foot',name:'足部光療',icon:'🦶'}, {id:'remove',name:'卸甲',icon:'✨'}, {id:'care',name:'保養',icon:'🌿'} ];
         
+        // ⚠️ 您的服務列表文案，完全保留 ⚠️
         const SERVICES = [
             { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
             { category: 'hand', id: 'h2', name: '【手部】貓眼', price: 600, time: 90 }, 
@@ -149,59 +150,120 @@
             { category: 'care', id: 'c4', name: '【保養】足部修養', price: '現場報價', time: 30 }
         ];
 
+        // ⚠️ 您指定的設計師連結，已整合 ⚠️
         const STYLISTS = [ 
-            {id:'any',name:'不指定設計師',img:''}, 
-            {id:'s1',name:'虹',img:'https://via.placeholder.com/40'}, 
-            {id:'s2',name:'敬',img:'https://via.placeholder.com/40'}, 
-            {id:'s3',name:'芮綺',img:'https://via.placeholder.com/40'} 
+            { id: 'any', name: '不指定設計師', img: '' },
+            { id: 's1', name: '虹', img: 'https://www.dropbox.com/scl/fi/p5yp0ff6r36hyv5314hqu/p1.jpg?rlkey=2r9l80w2q1ljzn2utoyev9gux&st=vjzu6w4h&raw=1' }, 
+            { id: 's2', name: '敬', img: 'https://www.dropbox.com/scl/fi/70tckw1bxps5sjph2ht27/p2.jpg?rlkey=js9dm1zc1h7yduwzha40trtvk&st=zmfv5fb2&raw=1' }, 
+            { id: 's3', name: '芮綺', img: 'https://www.dropbox.com/scl/fi/fyonnvr9fhc2bni36ro22/p3.jpg?rlkey=06u8rsnb4n2pik7nnrdhfaqdb&st=bwzev9h4&raw=1' } 
         ];
 
         let currentData = { category:null, service:null, stylist:STYLISTS[0], date:'', time:null, durationSlots: 1, phone:'', userId:'', userImg:'' };
         let bookedTimes = []; 
 
-       window.onload = async function() {
+        window.onload = async function() {
             try {
-                // 🚨 測試 2：開始初始化
-                alert("步驟 1: 準備初始化 LIFF (" + LIFF_ID + ")");
-                
                 await liff.init({ liffId: LIFF_ID });
-                
-                // 🚨 測試 3：初始化成功
-                alert("步驟 2: LIFF 初始化成功！");
-
-                if (!liff.isLoggedIn()) { 
-                    alert("步驟 3: 尚未登入，轉跳登入...");
-                    liff.login(); 
-                    return; 
-                }
-
+                if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
+                
+                // ✅ 這裡現在是安全的，因為上面的 HTML 已經補回 userName 了
                 document.getElementById('userName').innerText = profile.displayName;
+                if(profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
                 currentData.userId = profile.userId;
                 
-                // 渲染畫面
-                renderCategories(); 
-                renderStylists(); 
-                // renderTimeSlots(); // 先註解掉，怕這裡報錯
-
-                // 🚨 測試 4：準備關閉 Loading
-                alert("步驟 4: 準備顯示畫面...");
+                renderCategories(); renderStylists(); renderTimeSlots();
+                
+                const dateInput = document.getElementById('dateInput');
+                dateInput.min = new Date().toISOString().split('T')[0];
+                dateInput.addEventListener('change', (e) => handleDateOrStylistChange());
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
-
             } catch (err) {
-                // 🚨 抓到兇手了！
-                alert("❌ 發生錯誤：\n" + err);
+                // 如果還是有錯，會跳窗顯示，而不是卡死
+                alert("啟動錯誤: " + err);
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
             }
         };
 
-        // 簡單的渲染函式
-        function renderCategories() { document.getElementById('categoryList').innerHTML = CATEGORIES.map(c => `<div class="p-4 border text-center">${c.name}</div>`).join(''); }
-        function renderStylists() { document.getElementById('stylistList').innerHTML = STYLISTS.map(s => `<div class="p-3 border">${s.name}</div>`).join(''); }
-
+        // --- 功能邏輯 ---
+        async function showMyBookings() {
+            document.getElementById('mainView').classList.add('hidden');
+            document.getElementById('myBookingView').classList.remove('hidden');
+            const listDiv = document.getElementById('myBookingList');
+            listDiv.innerHTML = '<p class="text-center text-gray-400 mt-10">資料載入中...</p>';
+            try {
+                const res = await fetch(`${GAS_URL}?action=get_history&userId=${currentData.userId}`);
+                const bookings = await res.json();
+                if(bookings.length === 0) { listDiv.innerHTML = '<p class="text-center text-gray-400 mt-10">目前沒有預約紀錄</p>'; return; }
+                const now = new Date();
+                listDiv.innerHTML = bookings.map(b => {
+                    const apptTime = new Date(`${b.date}T${b.time}`);
+                    const diffHours = (apptTime - now) / (1000 * 60 * 60);
+                    const canCancel = diffHours > 24;
+                    return `<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100"><div class="flex justify-between items-start mb-2"><div><div class="text-lg font-bold text-gray-700">${b.date} ${b.time}</div><div class="text-sm text-[#ea5548] font-bold">${b.service}</div></div><div class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">${b.stylist}</div></div><div class="flex justify-between items-center mt-3"><span class="text-xs text-gray-400">費用: ${typeof b.price==='number'?'$'+b.price:b.price}</span>${canCancel ? `<button onclick="cancelBooking('${b.date}', '${b.time}')" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-xs font-bold hover:bg-red-200">取消預約</button>` : `<button disabled class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-xs font-bold cursor-not-allowed">限電話取消</button>`}</div></div>`;
+                }).join('');
+            } catch (e) { listDiv.innerHTML = '<p class="text-center text-red-400 mt-10">載入失敗</p>'; alert(e); }
+        }
+        function closeMyBookings() { document.getElementById('myBookingView').classList.add('hidden'); document.getElementById('mainView').classList.remove('hidden'); }
+        async function cancelBooking(date, time) {
+            if(!confirm(`確定要取消 ${date} ${time} 的預約嗎？`)) return;
+            const listDiv = document.getElementById('myBookingList'); listDiv.innerHTML = '<p class="text-center text-gray-400 mt-10">處理中...</p>';
+            try { await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cancel', userId: currentData.userId, date: date, time: time }) }); alert("預約已取消！"); showMyBookings(); } catch(e) { alert("取消失敗: " + e); showMyBookings(); }
+        }
+        async function handleDateOrStylistChange() {
+            const dateStr = document.getElementById('dateInput').value; currentData.date = dateStr; if (!dateStr) return;
+            document.getElementById('timeLoading').classList.remove('hidden'); document.querySelectorAll('#timeSlots button').forEach(b => b.disabled = true);
+            try { const response = await fetch(`${GAS_URL}?date=${dateStr}&stylist=${currentData.stylist.name}`); bookedTimes = await response.json(); } catch (e) { bookedTimes = []; } finally { document.getElementById('timeLoading').classList.add('hidden'); renderTimeSlots(); }
+        }
+        function renderTimeSlots() {
+            const times = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+            const requiredSlots = Math.ceil(currentData.service.time / 60); currentData.durationSlots = requiredSlots;
+            document.getElementById('durationHint').innerText = `(需 ${currentData.service.time} 分鐘)`;
+            document.getElementById('timeSlots').innerHTML = times.map((t, index) => {
+                let isBooked = bookedTimes.includes(t); let isAvailable = !isBooked;
+                if (isAvailable && requiredSlots > 1) { for (let i = 1; i < requiredSlots; i++) { if (index + i >= times.length || bookedTimes.includes(times[index + i])) { isAvailable = false; break; } } }
+                return `<button onclick="selectTime('${t}', ${index})" id="time-${index}" ${!isAvailable ? 'disabled' : ''} class="py-2 border border-gray-200 rounded-lg text-sm font-bold bg-white ${!isAvailable ? 'btn-disabled' : 'text-gray-500 hover:border-[#ea5548]'}">${t}</button>`;
+            }).join('');
+        }
+        function selectTime(startTime, startIndex) {
+            const times = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+            document.querySelectorAll('#timeSlots button').forEach(b => { if(!b.disabled) b.className = "py-2 border border-gray-200 rounded-lg text-sm font-bold bg-white text-gray-500"; });
+            let selectedSlots = []; for (let i = 0; i < currentData.durationSlots; i++) { let btn = document.getElementById(`time-${startIndex + i}`); if(btn) { btn.className = "py-2 border border-[#ea5548] rounded-lg text-sm font-bold bg-[#ea5548] text-white"; selectedSlots.push(times[startIndex + i]); } }
+            currentData.time = selectedSlots.join(",");
+        }
+        function renderCategories() { document.getElementById('categoryList').innerHTML = CATEGORIES.map(c => `<div onclick="selectCategory('${c.id}')" class="p-4 border rounded-xl text-center cursor-pointer hover:border-[#ea5548]">${c.icon} ${c.name}</div>`).join(''); }
+        function selectCategory(id) { const filtered = SERVICES.filter(s => s.category === id); document.getElementById('serviceList').innerHTML = filtered.map(s => `<div onclick="selectService('${s.id}')" class="p-4 border rounded-xl flex justify-between cursor-pointer hover:border-[#ea5548]"><span>${s.name}</span><span class="text-[#8F2C2F]">${typeof s.price==='number'?'$'+s.price:s.price}</span></div>`).join(''); changeStep(2); }
+        function selectService(id) { currentData.service = SERVICES.find(s => s.id === id); changeStep(3); }
+        function renderStylists() { 
+            document.getElementById('stylistList').innerHTML = STYLISTS.map(s => `
+                <div onclick="selectStylist('${s.id}')" class="p-3 border rounded-xl flex items-center gap-3 cursor-pointer hover:border-[#ea5548]">
+                    <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
+                        ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-[10px] text-gray-500 font-bold">不指定</div>'}
+                    </div>
+                    <div>${s.name}</div>
+                </div>
+            `).join(''); 
+        }
+        function selectStylist(id) { currentData.stylist = STYLISTS.find(s => s.id === id); if(currentData.date) handleDateOrStylistChange(); }
+        function validateAndNext() { currentData.phone = document.getElementById('userPhone').value; if(!currentData.date || !currentData.time || !currentData.phone) return alert("請填寫完整"); changeStep(5); }
+        function changeStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden')); document.getElementById(`step${step}`).classList.remove('hidden');
+            if(step===5) {
+                document.getElementById('confirmName').innerText = document.getElementById('userName').innerText;
+                document.getElementById('confirmStylist').innerText = currentData.stylist.name;
+                document.getElementById('confirmService').innerText = currentData.service.name;
+                document.getElementById('confirmDuration').innerText = `約 ${currentData.service.time} 分鐘`;
+                document.getElementById('confirmDateTime').innerText = `${currentData.date} ${currentData.time.split(",")[0]}`;
+            }
+        }
+        async function submitBooking() {
+            const btn = document.querySelector('#step5 button'); btn.innerText = "傳送中...";
+            try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(currentData), mode: 'no-cors', headers: {'Content-Type': 'application/json'} });
+            if (liff.isInClient()) { await liff.sendMessages([{type:'text', text:`預約成功\n項目：${currentData.service.name}\n時間：${currentData.date} ${currentData.time.split(",")[0]}`}]); } changeStep('Success'); } catch(e) { alert("錯誤: "+e); btn.innerText="送出"; }
+        }
     </script>
 </body>
 </html>
