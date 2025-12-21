@@ -137,7 +137,7 @@
     <script>
         // --- 1. 基本設定區 ---
         const LIFF_ID = "2008649114-uMkSDYgW"; 
-        // 👇 這就是你給我的 Google Script 網址
+        // 你的 Google Apps Script 網址
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxWDbcuW9YBQC-sI6_q208gL7hdniUxG8GGn4QuAmNqZ89yHSSr-C-_4mQWeO2KTSE/exec";
 
         // --- 2. 假表與排班設定 ---
@@ -171,11 +171,12 @@
             { id: 's4', name: '造型設計款', price: '現場報價', time: 120 }
         ];
 
+        // 👇 這裡就是你更新的美甲師名單 👇
         const STYLISTS = [
             { id: 'any', name: '不指定設計師', img: '' },
-            { id: 's1', name: 'Karen 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karen' },
-            { id: 's2', name: 'Jessica 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica' },
-            { id: 's3', name: 'Zoe 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe' }
+            { id: 's1', name: '虹', img: 'https://www.dropbox.com/scl/fi/p5yp0ff6r36hyv5314hqu/p1.jpg?rlkey=2r9l80w2q1ljzn2utoyev9gux&st=vjzu6w4h&raw=1' },
+            { id: 's2', name: '敬', img: 'https://www.dropbox.com/scl/fi/70tckw1bxps5sjph2ht27/p2.jpg?rlkey=js9dm1zc1h7yduwzha40trtvk&st=zmfv5fb2&raw=1' },
+            { id: 's3', name: '芮綺', img: 'https://www.dropbox.com/scl/fi/fyonnvr9fhc2bni36ro22/p3.jpg?rlkey=06u8rsnb4n2pik7nnrdhfaqdb&st=bwzev9h4&raw=1' }
         ];
 
         let currentData = { service: null, stylist: STYLISTS[0], date: new Date().toISOString().split('T')[0], time: null };
