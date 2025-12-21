@@ -16,9 +16,6 @@
             --bg-gray: #F3F4F6;
         }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); }
-        .text-brand { color: var(--brand-wine); }
-        .bg-brand { background-color: var(--brand-wine); }
-        .border-brand { border-color: var(--brand-pink); }
         
         /* 選中時的樣式 */
         .selected-card {
@@ -138,21 +135,46 @@
     </div>
 
     <script>
-        // --- 設定區 ---
-        const LIFF_ID = "2008649114-uMkSDYgW"; // 這裡填你的 LIFF ID
-        
-        // 模擬資料 (因為原本的檔案沒上傳，我先幫你補上)
+        // --- 1. 基本設定區 ---
+        const LIFF_ID = "2008649114-uMkSDYgW"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycby6mKSsfT3Ci-Rc97cbcMAU6t6tV1QNDrJ1ONv_X7uOsLt9L-mQQ9uT_6uSzwXfl4w/exec";
+
+        // --- 2. 假表與排班設定 ---
+        const SHOP_CONFIG = {
+            closedWeekday: 3, // 0=週日... 3=週三
+            
+            // 2026 年台灣國定假日表 (預估版)
+            holidays: [
+                "2026-01-01", // 元旦
+                "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-22", // 農曆過年
+                "2026-02-28", // 228
+                "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", // 清明
+                "2026-05-01", // 勞動節
+                "2026-06-19", "2026-06-20", "2026-06-21", // 端午
+                "2026-09-25", "2026-09-26", "2026-09-27", // 中秋
+                "2026-10-10"  // 國慶
+            ],
+
+            // 美甲師個人休假表
+            stylistLeaves: {
+                's1': ['2026-01-10'], // 範例：s1 在這天休假
+                's2': [], 
+                's3': []
+            }
+        };
+
         const SERVICES = [
             { id: 's1', name: '單色凝膠手部', price: 800, time: 60 },
             { id: 's2', name: '單色凝膠足部', price: 1000, time: 60 },
             { id: 's3', name: '深層手部保養', price: 1200, time: 90 },
-            { id: 's4', name: '造型設計款 (現場報價)', price: '現場報價', time: 120 }
+            { id: 's4', name: '造型設計款', price: '現場報價', time: 120 }
         ];
 
         const STYLISTS = [
             { id: 'any', name: '不指定設計師', img: '' },
-            { id: 't1', name: 'Karen 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karen' },
-            { id: 't2', name: 'Jessica 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica' }
+            { id: 's1', name: 'S1 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karen' },
+            { id: 's2', name: 'S2 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica' },
+            { id: 's3', name: 'S3 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe' }
         ];
 
         // --- 狀態變數 ---
@@ -171,38 +193,80 @@
                     liff.login();
                     return;
                 }
-                
-                // 取得使用者資料
                 const profile = await liff.getProfile();
                 document.getElementById('userName').innerText = profile.displayName;
                 if(profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
 
-                // 渲染畫面
                 renderServices();
                 renderStylists();
                 renderTimeSlots();
                 
-                // 設定預設日期為今天
-                document.getElementById('dateInput').value = currentData.date;
-                document.getElementById('dateInput').min = currentData.date;
+                // 設定日期監聽
+                const dateInput = document.getElementById('dateInput');
+                dateInput.value = currentData.date;
+                dateInput.min = new Date().toISOString().split('T')[0];
+                dateInput.addEventListener('change', function(e) {
+                    checkDateAvailability(e.target.value);
+                });
 
-                // 顯示主畫面
+                // 顯示畫面
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
                 document.getElementById('app').classList.add('animate-fade-in');
 
             } catch (err) {
-                alert("初始化錯誤: " + err);
-                document.getElementById('loading').classList.add('hidden'); // 就算錯也顯示畫面
+                console.error("LIFF Init Error:", err);
+                document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
             }
         };
+
+        // --- 核心邏輯：檢查日期是否可預約 ---
+        function checkDateAvailability(dateStr) {
+            const dateObj = new Date(dateStr);
+            const dayOfWeek = dateObj.getDay(); 
+            const nextBtn = document.getElementById('btnStep3Next');
+            
+            let errorMsg = null;
+
+            // 1. 檢查每週固定公休
+            if (dayOfWeek === SHOP_CONFIG.closedWeekday) {
+                errorMsg = "抱歉，本店每週三固定公休，請選擇其他日期。";
+            }
+            
+            // 2. 檢查國定假日/全店公休
+            if (SHOP_CONFIG.holidays.includes(dateStr)) {
+                errorMsg = "抱歉，該日為國定假日/店休日。";
+            }
+
+            // 3. 檢查指定設計師休假
+            const sid = currentData.stylist.id;
+            if (sid !== 'any' && SHOP_CONFIG.stylistLeaves[sid] && SHOP_CONFIG.stylistLeaves[sid].includes(dateStr)) {
+                errorMsg = `抱歉，${currentData.stylist.name} 該日排休，請改期或選擇其他老師。`;
+            }
+
+            if (errorMsg) {
+                alert(errorMsg);
+                document.getElementById('dateInput').value = ''; 
+                currentData.date = null;
+                nextBtn.disabled = true;
+                nextBtn.classList.add('bg-gray-300');
+                nextBtn.classList.remove('bg-[#ea5548]');
+            } else {
+                currentData.date = dateStr;
+                if(currentData.time) {
+                    nextBtn.disabled = false;
+                    nextBtn.classList.remove('bg-gray-300');
+                    nextBtn.classList.add('bg-[#ea5548]');
+                }
+            }
+        }
 
         // --- 渲染函式 ---
         function renderServices() {
             const container = document.getElementById('serviceList');
             container.innerHTML = SERVICES.map(s => `
-                <div onclick="selectService('${s.id}')" id="service-${s.id}" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex justify-between items-center">
+                <div onclick="selectService('${s.id}')" id="service-${s.id}" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex justify-between items-center mb-3">
                     <div>
                         <div class="font-bold text-gray-700">${s.name}</div>
                         <div class="text-xs text-gray-400 mt-1">約 ${s.time} 分鐘</div>
@@ -216,13 +280,12 @@
             const container = document.getElementById('stylistList');
             container.innerHTML = STYLISTS.map(s => `
                 <div onclick="selectStylist('${s.id}')" id="stylist-${s.id}" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex items-center mb-2">
-                    <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden mr-4">
-                        ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-xs text-gray-500">Any</div>'}
+                    <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-100">
+                        ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-xs text-gray-500 font-bold">不指定</div>'}
                     </div>
                     <div class="font-bold text-gray-700">${s.name}</div>
                 </div>
             `).join('');
-            // 預設選中不指定
             selectStylist('any');
         }
 
@@ -236,16 +299,11 @@
             `).join('');
         }
 
-        // --- 邏輯操作 ---
+        // --- 選擇邏輯 ---
         function selectService(id) {
-            // 清除舊選擇
             document.querySelectorAll('#serviceList > div').forEach(el => el.classList.remove('selected-card'));
-            // 加上新選擇
             document.getElementById(`service-${id}`).classList.add('selected-card');
-            
             currentData.service = SERVICES.find(s => s.id === id);
-            
-            // 自動跳轉
             setTimeout(() => changeStep(2), 300);
         }
 
@@ -253,9 +311,15 @@
             document.querySelectorAll('#stylistList > div').forEach(el => el.classList.remove('selected-card'));
             document.getElementById(`stylist-${id}`).classList.add('selected-card');
             currentData.stylist = STYLISTS.find(s => s.id === id);
+            
+            // 換老師時重新檢查日期
+            const dateInput = document.getElementById('dateInput');
+            if (dateInput.value) checkDateAvailability(dateInput.value);
         }
 
         function selectTime(time) {
+            if(!currentData.date) { alert("請先選擇日期！"); return; }
+            
             document.querySelectorAll('#timeSlots > button').forEach(el => {
                 el.classList.remove('bg-[#ea5548]', 'text-white', 'border-transparent');
                 el.classList.add('text-gray-500', 'border-gray-200');
@@ -266,23 +330,17 @@
             
             currentData.time = time;
             
-            // 啟用下一步按鈕
             const nextBtn = document.getElementById('btnStep3Next');
             nextBtn.disabled = false;
             nextBtn.classList.remove('bg-gray-300');
-            nextBtn.classList.add('bg-[#ea5548]', 'shadow-lg');
+            nextBtn.classList.add('bg-[#ea5548]');
         }
 
         function changeStep(step) {
-            // 隱藏所有頁面
             document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-            // 顯示目標頁面
             document.getElementById(`step${step}`).classList.remove('hidden');
-            
-            // 更新進度條
             document.getElementById('progressBar').style.width = `${step * 25}%`;
 
-            // 如果是確認頁，更新資料
             if(step === 4) {
                 document.getElementById('confirmService').innerText = currentData.service.name;
                 document.getElementById('confirmStylist').innerText = currentData.stylist.name;
@@ -292,20 +350,46 @@
             }
         }
 
-        function submitBooking() {
-            // 這裡可以串接 Google Apps Script 或單純發送訊息
-            if (liff.isInClient()) {
-                liff.sendMessages([{
-                    type: 'text',
-                    text: `【預約通知】\n姓名：${document.getElementById('userName').innerText}\n項目：${currentData.service.name}\n老師：${currentData.stylist.name}\n時間：${document.getElementById('dateInput').value} ${currentData.time}`
-                }]).then(() => {
-                    changeStep('Success');
-                }).catch(err => {
-                    alert('發送失敗: ' + err);
+        // --- 送出預約 ---
+        async function submitBooking() {
+            const btn = document.querySelector('#step4 button');
+            const originalText = btn.innerText;
+            btn.innerText = "處理中...";
+            btn.disabled = true;
+
+            const bookingData = {
+                created_at: new Date().toLocaleString(),
+                name: document.getElementById('userName').innerText,
+                service: currentData.service.name,
+                stylist: currentData.stylist.name,
+                date: document.getElementById('dateInput').value,
+                time: currentData.time,
+                price: currentData.service.price
+            };
+
+            try {
+                // 1. 寫入 Google Sheets
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(bookingData),
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' }
                 });
-            } else {
-                alert('這是在瀏覽器測試，實際上會發送 LINE 訊息！');
+
+                // 2. LINE 通知
+                if (liff.isInClient()) {
+                    await liff.sendMessages([{
+                        type: 'text',
+                        text: `【預約成功】\n姓名：${bookingData.name}\n項目：${bookingData.service}\n老師：${bookingData.stylist}\n時間：${bookingData.date} ${bookingData.time}\n費用：${typeof bookingData.price === 'number' ? '$'+bookingData.price : bookingData.price}`
+                    }]);
+                }
+
                 changeStep('Success');
+
+            } catch (err) {
+                alert("連線錯誤: " + err);
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         }
     </script>
