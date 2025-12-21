@@ -1,50 +1,313 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>指要妳 nail salon | 線上預約系統</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>指要妳 Just ForYou Nail salon | 線上預約</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-      
-      :root {
-        --brand-wine: #8F2C2F;
-        --brand-pink: #D86B76;
-        --brand-orange: #F58529;
-        --cream-pink: #FFF9F9;
-      }
-
-      body {
-        font-family: 'Noto Sans TC', sans-serif;
-        background-color: var(--cream-pink);
-        color: #4A4A4A;
-        margin: 0;
-        padding: 0;
-        overflow-x: hidden;
-      }
-
-      .bg-gradient-ig {
-        background: linear-gradient(45deg, #8F2C2F, #D86B76, #F58529);
-      }
-
-      .shadow-soft {
-        box-shadow: 0 10px 30px -10px rgba(143, 44, 47, 0.1);
-      }
-
-      @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .animate-slide-up {
-        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
+        :root {
+            --brand-wine: #8F2C2F;
+            --brand-pink: #D86B76;
+            --brand-orange: #F58529;
+            --bg-gray: #F3F4F6;
+        }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--bg-gray); }
+        .text-brand { color: var(--brand-wine); }
+        .bg-brand { background-color: var(--brand-wine); }
+        .border-brand { border-color: var(--brand-pink); }
+        
+        /* 選中時的樣式 */
+        .selected-card {
+            border-color: #ea5548 !important;
+            background-color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: scale(1.02);
+        }
+        
+        /* 動畫 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .hidden { display: none !important; }
     </style>
- 
 </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
-  </body>
+<body class="pb-12">
+
+    <div id="loading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#8F2C2F] mb-4"></div>
+        <p class="text-[#8F2C2F] font-bold tracking-widest">SYSTEM LOADING...</p>
+    </div>
+
+    <div id="app" class="max-w-md mx-auto min-h-screen relative hidden">
+        
+        <header class="p-6 flex justify-between items-center bg-white shadow-sm mb-4 sticky top-0 z-10">
+            <div>
+                <h1 class="text-xl font-bold text-gray-700">指要妳 <span class="text-[#ea5548] text-sm block">Just ForYou Nail salon</span></h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <img id="userImg" src="https://via.placeholder.com/40" class="w-8 h-8 rounded-full border border-gray-200">
+                <span id="userName" class="text-xs font-bold text-gray-500">Guest</span>
+            </div>
+        </header>
+
+        <div class="px-6 mb-6">
+            <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                <div id="progressBar" class="h-full bg-[#ea5548] transition-all duration-500" style="width: 25%"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                <span>服務</span><span>老師</span><span>時間</span><span>確認</span>
+            </div>
+        </div>
+
+        <main class="px-4">
+            
+            <div id="step1" class="step-content animate-fade-in">
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">選擇服務項目</h2>
+                <div id="serviceList" class="space-y-3">
+                    </div>
+            </div>
+
+            <div id="step2" class="step-content hidden animate-fade-in">
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">選擇美甲老師</h2>
+                <div id="stylistList" class="space-y-3">
+                    </div>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="changeStep(1)" class="w-1/3 py-3 rounded-xl bg-white text-gray-400 font-bold border">上一步</button>
+                    <button onclick="changeStep(3)" class="flex-1 py-3 rounded-xl bg-[#ea5548] text-white font-bold shadow-lg">下一步</button>
+                </div>
+            </div>
+
+            <div id="step3" class="step-content hidden animate-fade-in">
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">預約日期與時間</h2>
+                
+                <div class="bg-white p-4 rounded-2xl shadow-sm mb-4">
+                    <label class="block text-xs font-bold text-gray-400 mb-2">日期</label>
+                    <input type="date" id="dateInput" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-gray-700 outline-none border focus:border-[#ea5548]">
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm">
+                    <label class="block text-xs font-bold text-gray-400 mb-2">時段</label>
+                    <div id="timeSlots" class="grid grid-cols-3 gap-2">
+                        </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button onclick="changeStep(2)" class="w-1/3 py-3 rounded-xl bg-white text-gray-400 font-bold border">上一步</button>
+                    <button onclick="changeStep(4)" id="btnStep3Next" disabled class="flex-1 py-3 rounded-xl bg-gray-300 text-white font-bold transition-colors">下一步</button>
+                </div>
+            </div>
+
+            <div id="step4" class="step-content hidden animate-fade-in">
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">確認預約資訊</h2>
+                <div class="bg-white p-6 rounded-2xl shadow-sm space-y-4 text-sm">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-400">預約人</span>
+                        <span id="confirmName" class="font-bold text-gray-700">Loading...</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-400">服務項目</span>
+                        <span id="confirmService" class="font-bold text-[#8F2C2F]">尚未選擇</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-gray-400">美甲老師</span>
+                        <span id="confirmStylist" class="font-bold text-gray-700">尚未選擇</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">預約時間</span>
+                        <span id="confirmDateTime" class="font-bold text-[#ea5548]">尚未選擇</span>
+                    </div>
+                </div>
+                
+                <button onclick="submitBooking()" class="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-[#8F2C2F] to-[#ea5548] text-white font-bold text-lg shadow-xl active:scale-95 transition-transform">
+                    確認送出預約
+                </button>
+                <button onclick="changeStep(3)" class="w-full mt-3 py-3 text-gray-400 text-sm font-bold">返回修改</button>
+            </div>
+
+            <div id="stepSuccess" class="step-content hidden animate-fade-in text-center pt-10">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🎉</div>
+                <h2 class="text-2xl font-bold text-gray-700">預約成功！</h2>
+                <p class="text-gray-500 mt-2 text-sm">我們已收到您的預約，期待與您見面。</p>
+                <button onclick="liff.closeWindow()" class="mt-8 px-8 py-3 bg-gray-800 text-white rounded-xl font-bold">關閉視窗</button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- 設定區 ---
+        const LIFF_ID = "2008649114-uMkSDYgW"; // 這裡填你的 LIFF ID
+        
+        // 模擬資料 (因為原本的檔案沒上傳，我先幫你補上)
+        const SERVICES = [
+            { id: 's1', name: '單色凝膠手部', price: 800, time: 60 },
+            { id: 's2', name: '單色凝膠足部', price: 1000, time: 60 },
+            { id: 's3', name: '深層手部保養', price: 1200, time: 90 },
+            { id: 's4', name: '造型設計款 (現場報價)', price: '現場報價', time: 120 }
+        ];
+
+        const STYLISTS = [
+            { id: 'any', name: '不指定設計師', img: '' },
+            { id: 't1', name: 'Karen 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Karen' },
+            { id: 't2', name: 'Jessica 老師', img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica' }
+        ];
+
+        // --- 狀態變數 ---
+        let currentData = {
+            service: null,
+            stylist: STYLISTS[0],
+            date: new Date().toISOString().split('T')[0],
+            time: null
+        };
+
+        // --- 初始化 ---
+        window.onload = async function() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+                
+                // 取得使用者資料
+                const profile = await liff.getProfile();
+                document.getElementById('userName').innerText = profile.displayName;
+                if(profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
+
+                // 渲染畫面
+                renderServices();
+                renderStylists();
+                renderTimeSlots();
+                
+                // 設定預設日期為今天
+                document.getElementById('dateInput').value = currentData.date;
+                document.getElementById('dateInput').min = currentData.date;
+
+                // 顯示主畫面
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                document.getElementById('app').classList.add('animate-fade-in');
+
+            } catch (err) {
+                alert("初始化錯誤: " + err);
+                document.getElementById('loading').classList.add('hidden'); // 就算錯也顯示畫面
+                document.getElementById('app').classList.remove('hidden');
+            }
+        };
+
+        // --- 渲染函式 ---
+        function renderServices() {
+            const container = document.getElementById('serviceList');
+            container.innerHTML = SERVICES.map(s => `
+                <div onclick="selectService('${s.id}')" id="service-${s.id}" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex justify-between items-center">
+                    <div>
+                        <div class="font-bold text-gray-700">${s.name}</div>
+                        <div class="text-xs text-gray-400 mt-1">約 ${s.time} 分鐘</div>
+                    </div>
+                    <div class="font-bold text-[#8F2C2F]">${typeof s.price === 'number' ? '$'+s.price : s.price}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderStylists() {
+            const container = document.getElementById('stylistList');
+            container.innerHTML = STYLISTS.map(s => `
+                <div onclick="selectStylist('${s.id}')" id="stylist-${s.id}" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex items-center mb-2">
+                    <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden mr-4">
+                        ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-xs text-gray-500">Any</div>'}
+                    </div>
+                    <div class="font-bold text-gray-700">${s.name}</div>
+                </div>
+            `).join('');
+            // 預設選中不指定
+            selectStylist('any');
+        }
+
+        function renderTimeSlots() {
+            const times = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+            const container = document.getElementById('timeSlots');
+            container.innerHTML = times.map(t => `
+                <button onclick="selectTime('${t}')" id="time-${t.replace(':','')}" class="py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-500 hover:border-[#ea5548] hover:text-[#ea5548] transition-all">
+                    ${t}
+                </button>
+            `).join('');
+        }
+
+        // --- 邏輯操作 ---
+        function selectService(id) {
+            // 清除舊選擇
+            document.querySelectorAll('#serviceList > div').forEach(el => el.classList.remove('selected-card'));
+            // 加上新選擇
+            document.getElementById(`service-${id}`).classList.add('selected-card');
+            
+            currentData.service = SERVICES.find(s => s.id === id);
+            
+            // 自動跳轉
+            setTimeout(() => changeStep(2), 300);
+        }
+
+        function selectStylist(id) {
+            document.querySelectorAll('#stylistList > div').forEach(el => el.classList.remove('selected-card'));
+            document.getElementById(`stylist-${id}`).classList.add('selected-card');
+            currentData.stylist = STYLISTS.find(s => s.id === id);
+        }
+
+        function selectTime(time) {
+            document.querySelectorAll('#timeSlots > button').forEach(el => {
+                el.classList.remove('bg-[#ea5548]', 'text-white', 'border-transparent');
+                el.classList.add('text-gray-500', 'border-gray-200');
+            });
+            const btn = document.getElementById(`time-${time.replace(':','')}`);
+            btn.classList.remove('text-gray-500', 'border-gray-200');
+            btn.classList.add('bg-[#ea5548]', 'text-white', 'border-transparent');
+            
+            currentData.time = time;
+            
+            // 啟用下一步按鈕
+            const nextBtn = document.getElementById('btnStep3Next');
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('bg-gray-300');
+            nextBtn.classList.add('bg-[#ea5548]', 'shadow-lg');
+        }
+
+        function changeStep(step) {
+            // 隱藏所有頁面
+            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+            // 顯示目標頁面
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            
+            // 更新進度條
+            document.getElementById('progressBar').style.width = `${step * 25}%`;
+
+            // 如果是確認頁，更新資料
+            if(step === 4) {
+                document.getElementById('confirmService').innerText = currentData.service.name;
+                document.getElementById('confirmStylist').innerText = currentData.stylist.name;
+                const dateVal = document.getElementById('dateInput').value;
+                document.getElementById('confirmDateTime').innerText = `${dateVal} ${currentData.time}`;
+                document.getElementById('confirmName').innerText = document.getElementById('userName').innerText;
+            }
+        }
+
+        function submitBooking() {
+            // 這裡可以串接 Google Apps Script 或單純發送訊息
+            if (liff.isInClient()) {
+                liff.sendMessages([{
+                    type: 'text',
+                    text: `【預約通知】\n姓名：${document.getElementById('userName').innerText}\n項目：${currentData.service.name}\n老師：${currentData.stylist.name}\n時間：${document.getElementById('dateInput').value} ${currentData.time}`
+                }]).then(() => {
+                    changeStep('Success');
+                }).catch(err => {
+                    alert('發送失敗: ' + err);
+                });
+            } else {
+                alert('這是在瀏覽器測試，實際上會發送 LINE 訊息！');
+                changeStep('Success');
+            }
+        }
+    </script>
+</body>
 </html>
