@@ -1,4 +1,3 @@
-
 export interface Service {
   id: string;
   name: string;
@@ -23,6 +22,11 @@ export interface Appointment {
   time: string; // HH:mm format
   durationMinutes: number;
   userName: string;
+}
+
+export interface Leave {
+  stylistId: string;
+  date: string;
 }
 
 export enum BookingStep {
