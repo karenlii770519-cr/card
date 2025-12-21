@@ -30,7 +30,7 @@
 
     <div id="loading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#8F2C2F] mb-4"></div>
-        <p class="text-[#8F2C2F] font-bold tracking-widest">載入中請稍後...</p>
+        <p class="text-[#8F2C2F] font-bold tracking-widest">SYSTEM LOADING...</p>
     </div>
 
     <div id="app" class="max-w-md mx-auto min-h-screen relative hidden">
@@ -44,54 +44,72 @@
 
         <div class="px-6 mb-6">
             <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
-                <div id="progressBar" class="h-full bg-[#ea5548] transition-all duration-500" style="width: 25%"></div>
+                <div id="progressBar" class="h-full bg-[#ea5548] transition-all duration-500" style="width: 20%"></div>
             </div>
             <div class="flex justify-between text-[10px] text-gray-400 mt-1">
-                <span>服務</span><span>老師</span><span>時間</span><span>確認</span>
+                <span>類別</span><span>款式</span><span>老師</span><span>時間</span><span>確認</span>
             </div>
         </div>
 
         <main class="px-4">
             <div id="step1" class="step-content animate-fade-in">
-                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">選擇服務項目</h2>
-                <div id="serviceList" class="space-y-3 pb-8"></div>
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">請問想做什麼項目？</h2>
+                <div id="categoryList" class="grid grid-cols-2 gap-3 pb-8">
+                    </div>
             </div>
 
             <div id="step2" class="step-content hidden animate-fade-in">
-                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">選擇美甲老師</h2>
-                <div id="stylistList" class="space-y-3"></div>
-                <div class="flex gap-3 mt-6">
-                    <button onclick="changeStep(1)" class="w-1/3 py-3 rounded-xl bg-white text-gray-400 font-bold border">上一步</button>
-                    <button onclick="changeStep(3)" class="flex-1 py-3 rounded-xl bg-[#ea5548] text-white font-bold shadow-lg">下一步</button>
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">選擇詳細款式</h2>
+                <div id="serviceList" class="space-y-3 pb-8"></div>
+                <div class="mt-4">
+                    <button onclick="changeStep(1)" class="w-full py-3 rounded-xl bg-white text-gray-400 font-bold border">回上一步</button>
                 </div>
             </div>
 
             <div id="step3" class="step-content hidden animate-fade-in">
-                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">預約日期與時間</h2>
-                <div class="bg-white p-4 rounded-2xl shadow-sm mb-4">
-                    <label class="block text-xs font-bold text-gray-400 mb-2">日期</label>
-                    <input type="date" id="dateInput" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-gray-700 outline-none border focus:border-[#ea5548]">
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm">
-                    <label class="block text-xs font-bold text-gray-400 mb-2">時段 (11:00 - 19:00)</label>
-                    <div id="timeSlots" class="grid grid-cols-3 gap-2"></div>
-                </div>
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">選擇美甲老師</h2>
+                <div id="stylistList" class="space-y-3"></div>
                 <div class="flex gap-3 mt-6">
                     <button onclick="changeStep(2)" class="w-1/3 py-3 rounded-xl bg-white text-gray-400 font-bold border">上一步</button>
-                    <button onclick="changeStep(4)" id="btnStep3Next" disabled class="flex-1 py-3 rounded-xl bg-gray-300 text-white font-bold transition-colors">下一步</button>
+                    <button onclick="changeStep(4)" class="flex-1 py-3 rounded-xl bg-[#ea5548] text-white font-bold shadow-lg">下一步</button>
                 </div>
             </div>
 
             <div id="step4" class="step-content hidden animate-fade-in">
+                <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">預約日期與資料</h2>
+                
+                <div class="bg-white p-4 rounded-2xl shadow-sm mb-4">
+                    <label class="block text-xs font-bold text-gray-400 mb-2">日期</label>
+                    <input type="date" id="dateInput" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-gray-700 outline-none border focus:border-[#ea5548]">
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm mb-4">
+                    <label class="block text-xs font-bold text-gray-400 mb-2">時段 (11:00 - 19:00)</label>
+                    <div id="timeSlots" class="grid grid-cols-3 gap-2"></div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-[#ea5548]/20">
+                    <label class="block text-xs font-bold text-gray-400 mb-2">聯絡電話 (必填)</label>
+                    <input type="tel" id="userPhone" placeholder="09xx-xxx-xxx" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-gray-700 outline-none border focus:border-[#ea5548] placeholder-gray-300">
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button onclick="changeStep(3)" class="w-1/3 py-3 rounded-xl bg-white text-gray-400 font-bold border">上一步</button>
+                    <button onclick="validateAndNext()" id="btnStep4Next" class="flex-1 py-3 rounded-xl bg-[#ea5548] text-white font-bold shadow-lg">下一步</button>
+                </div>
+            </div>
+
+            <div id="step5" class="step-content hidden animate-fade-in">
                 <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">確認預約資訊</h2>
                 <div class="bg-white p-6 rounded-2xl shadow-sm space-y-4 text-sm">
                     <div class="flex justify-between border-b pb-2"><span class="text-gray-400">預約人</span><span id="confirmName" class="font-bold text-gray-700">Loading...</span></div>
+                    <div class="flex justify-between border-b pb-2"><span class="text-gray-400">聯絡電話</span><span id="confirmPhone" class="font-bold text-[#8F2C2F]"></span></div>
                     <div class="flex justify-between border-b pb-2"><span class="text-gray-400">服務項目</span><span id="confirmService" class="font-bold text-[#8F2C2F]">尚未選擇</span></div>
                     <div class="flex justify-between border-b pb-2"><span class="text-gray-400">美甲老師</span><span id="confirmStylist" class="font-bold text-gray-700">尚未選擇</span></div>
                     <div class="flex justify-between"><span class="text-gray-400">預約時間</span><span id="confirmDateTime" class="font-bold text-[#ea5548]">尚未選擇</span></div>
                 </div>
                 <button onclick="submitBooking()" class="w-full mt-6 py-4 rounded-2xl bg-gradient-to-r from-[#8F2C2F] to-[#ea5548] text-white font-bold text-lg shadow-xl active:scale-95 transition-transform">確認送出預約</button>
-                <button onclick="changeStep(3)" class="w-full mt-3 py-3 text-gray-400 text-sm font-bold">返回修改</button>
+                <button onclick="changeStep(4)" class="w-full mt-3 py-3 text-gray-400 text-sm font-bold">返回修改</button>
             </div>
 
             <div id="stepSuccess" class="step-content hidden animate-fade-in text-center pt-10">
@@ -104,13 +122,11 @@
     </div>
 
     <script>
-        // --- 設定區 ---
         const LIFF_ID = "2008649114-uMkSDYgW"; 
         const GAS_URL = "https://script.google.com/macros/s/AKfycby-PQ44HEhNUv0BQEtM3B8I9FKoucNaWTsvKc4GtGNFd8GZpT9OSodkZnadQnbysQY/exec";
 
-        // --- 營業時間與假期 ---
         const SHOP_CONFIG = {
-            closedWeekday: 3, // 週三公休
+            closedWeekday: 3, 
             holidays: [
                 "2026-01-01", "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", 
                 "2026-02-20", "2026-02-21", "2026-02-22", "2026-02-28", "2026-04-03", 
@@ -120,34 +136,47 @@
             stylistLeaves: { 's1': [], 's2': [], 's3': [] }
         };
 
-        // --- 💅 菜單設定 (價格若不對請在此修改) ---
-        const SERVICES = [
-            // 手部光療
-            { id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
-            { id: 'h2', name: '【手部】漸層、貓眼', price: 600, time: 90 },
-            { id: 'h3', name: '【手部】暈染、亮粉等', price: 700, time: 90 },
-            { id: 'h4', name: '【手部】法式', price: 700, time: 120 },
-            { id: 'h5', name: '【手部】自帶圖 (依報價)', price: '現場報價', time: 150 },
-            
-            // 足部
-            { id: 'f1', name: '【足部】單色/貓眼/款式', price: 600, time: 60 }, // 預設 $600
-
-            // 保養與延甲
-            { id: 'c1', name: '【保養】手部保養', price: 500, time: 45 }, // 預設 $500
-            { id: 'c2', name: '【延甲】甲片延甲 (10指)', price: 1000, time: 60 }, // 預設 $1000
-            { id: 'c3', name: '【延甲】甲片延甲 (5指內)', price: 500, time: 30 }, // 預設 $500
-            { id: 'c4', name: '【修整】硬皮/足部修養', price: '現場報價', time: 30 },
-
-            // 卸甲
-            { id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 }, // 預設 $300
-            { id: 'r2', name: '【卸甲】延甲卸甲', price: 500, time: 60 }, // 預設 $500
-            
-            // 組合 (方便快速預約)
-            { id: 'm1', name: '【組合】手部卸甲+續作', price: '依款式', time: 90 },
-            { id: 'm2', name: '【組合】手部卸甲+保養+光療', price: '依款式', time: 135 }
+        // --- 1. 定義大分類 (依您的要求修改) ---
+        const CATEGORIES = [
+            { id: 'hand', name: '手部光療', icon: '💅' },
+            { id: 'foot', name: '足部光療', icon: '🦶' },
+            { id: 'remove', name: '卸甲', icon: '✨' },
+            { id: 'care', name: '保養', icon: '🌿' }
         ];
 
-        // --- 美甲師名單 ---
+        // --- 2. 服務項目 (重新分配 category) ---
+        const SERVICES = [
+            // === 手部光療 (hand) ===
+            { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
+            { category: 'hand', id: 'h2', name: '【手部】貓眼', price: 600, time: 90 },
+            { category: 'hand', id: 'h3', name: '【手部】相簿 $600 款', price: 600, time: 90 },
+            { category: 'hand', id: 'h4', name: '【手部】相簿 $700 款', price: 700, time: 100 },
+            { category: 'hand', id: 'h5', name: '【手部】暈染、亮粉等', price: 700, time: 90 },
+            { category: 'hand', id: 'h6', name: '【手部】法式', price: 700, time: 120 },
+            { category: 'hand', id: 'h7', name: '【手部】自帶圖 (line私訊報價)', price: '依報價', time: 150 },
+            { category: 'hand', id: 'c2', name: '【延甲】甲片延甲 (10指)', price: 1000, time: 60 }, // 延甲歸類在手部光療
+            { category: 'hand', id: 'c3', name: '【延甲】甲片延甲 (5指內)', price: 500, time: 30 },
+            { category: 'hand', id: 'm3', name: '【手足】同時光療 (單色)', price: 1000, time: 120 }, // 手足優惠
+
+            // === 足部光療 (foot) ===
+            { category: 'foot', id: 'f1', name: '【足部】單色/跳色', price: 600, time: 60 },
+            { category: 'foot', id: 'f2', name: '【足部】貓眼', price: 600: , time: 70 },
+            { category: 'foot', id: 'f3', name: '【足部】相簿 $600 款', price: 600, time: 70 },
+            { category: 'foot', id: 'f4', name: '【足部】相簿 $700 款', price: 700, time: 80 },
+            { category: 'foot', id: 'f5', name: '【足部】自帶圖 (line私訊報價)', price: '依報價', time: 120 },
+
+            // === 卸甲 (remove) ===
+            { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 },
+            { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
+            { category: 'remove', id: 'm1', name: '【組合】手部卸甲 + 續作', price: '依款式', time: 90 },
+            { category: 'remove', id: 'm2', name: '【組合】足部卸甲 + 續作', price: '依款式', time: 90 },
+            { category: 'remove', id: 'm4', name: '【組合】手足同時卸甲', price: 600, time: 60 },
+
+            // === 保養 (care) ===
+            { category: 'care', id: 'c1', name: '【保養】手部保養', price: 600, time: 45 },
+            { category: 'care', id: 'c4', name: '【保養】足部修養/硬皮', price: '現場報價', time: 30 }
+        ];
+
         const STYLISTS = [
             { id: 'any', name: '不指定設計師', img: '' },
             { id: 's1', name: '虹', img: 'https://www.dropbox.com/scl/fi/p5yp0ff6r36hyv5314hqu/p1.jpg?rlkey=2r9l80w2q1ljzn2utoyev9gux&st=vjzu6w4h&raw=1' },
@@ -155,9 +184,8 @@
             { id: 's3', name: '芮綺', img: 'https://www.dropbox.com/scl/fi/fyonnvr9fhc2bni36ro22/p3.jpg?rlkey=06u8rsnb4n2pik7nnrdhfaqdb&st=bwzev9h4&raw=1' }
         ];
 
-        let currentData = { service: null, stylist: STYLISTS[0], date: new Date().toISOString().split('T')[0], time: null };
+        let currentData = { category: null, service: null, stylist: STYLISTS[0], date: new Date().toISOString().split('T')[0], time: null, phone: '', userId: '', userImg: '' };
 
-        // --- 系統邏輯 ---
         window.onload = async function() {
             try {
                 await liff.init({ liffId: LIFF_ID });
@@ -165,8 +193,10 @@
                 const profile = await liff.getProfile();
                 document.getElementById('userName').innerText = profile.displayName;
                 if(profile.pictureUrl) document.getElementById('userImg').src = profile.pictureUrl;
-                
-                renderServices();
+                currentData.userId = profile.userId;
+                currentData.userImg = profile.pictureUrl;
+
+                renderCategories(); 
                 renderStylists();
                 renderTimeSlots();
                 
@@ -185,39 +215,19 @@
             }
         };
 
-        function checkDateAvailability(dateStr) {
-            const dateObj = new Date(dateStr);
-            const dayOfWeek = dateObj.getDay(); 
-            const nextBtn = document.getElementById('btnStep3Next');
-            let errorMsg = null;
-
-            if (dayOfWeek === SHOP_CONFIG.closedWeekday) errorMsg = "本店每週三公休。";
-            if (SHOP_CONFIG.holidays.includes(dateStr)) errorMsg = "該日為店休日。";
-            
-            const sid = currentData.stylist.id;
-            if (sid !== 'any' && SHOP_CONFIG.stylistLeaves[sid] && SHOP_CONFIG.stylistLeaves[sid].includes(dateStr)) {
-                errorMsg = `${currentData.stylist.name} 該日排休。`;
-            }
-
-            if (errorMsg) {
-                alert(errorMsg);
-                document.getElementById('dateInput').value = ''; 
-                currentData.date = null;
-                nextBtn.disabled = true;
-                nextBtn.classList.add('bg-gray-300');
-                nextBtn.classList.remove('bg-[#ea5548]');
-            } else {
-                currentData.date = dateStr;
-                if(currentData.time) {
-                    nextBtn.disabled = false;
-                    nextBtn.classList.remove('bg-gray-300');
-                    nextBtn.classList.add('bg-[#ea5548]');
-                }
-            }
+        function renderCategories() {
+            document.getElementById('categoryList').innerHTML = CATEGORIES.map(c => `
+                <div onclick="selectCategory('${c.id}')" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer hover:border-[#ea5548] shadow-sm flex flex-col items-center justify-center h-32 transition-all active:scale-95">
+                    <div class="text-3xl mb-2">${c.icon}</div>
+                    <div class="font-bold text-gray-700">${c.name}</div>
+                </div>
+            `).join('');
         }
 
-        function renderServices() {
-            document.getElementById('serviceList').innerHTML = SERVICES.map(s => `
+        function selectCategory(catId) {
+            currentData.category = catId;
+            const filteredServices = SERVICES.filter(s => s.category === catId);
+            document.getElementById('serviceList').innerHTML = filteredServices.map(s => `
                 <div onclick="selectService('${s.id}')" id="service-${s.id}" class="p-4 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex justify-between items-center mb-2 shadow-sm">
                     <div>
                         <div class="font-bold text-gray-700 text-sm">${s.name}</div>
@@ -225,99 +235,28 @@
                     </div>
                     <div class="font-bold text-[#8F2C2F] text-sm">${typeof s.price === 'number' ? '$'+s.price : s.price}</div>
                 </div>`).join('');
+            changeStep(2); 
+        }
+
+        function checkDateAvailability(dateStr) {
+            const dateObj = new Date(dateStr);
+            const dayOfWeek = dateObj.getDay(); 
+            let errorMsg = null;
+            if (dayOfWeek === SHOP_CONFIG.closedWeekday) errorMsg = "本店每週三公休。";
+            if (SHOP_CONFIG.holidays.includes(dateStr)) errorMsg = "該日為店休日。";
+            const sid = currentData.stylist.id;
+            if (sid !== 'any' && SHOP_CONFIG.stylistLeaves[sid] && SHOP_CONFIG.stylistLeaves[sid].includes(dateStr)) {
+                errorMsg = `${currentData.stylist.name} 該日排休。`;
+            }
+            if (errorMsg) {
+                alert(errorMsg);
+                document.getElementById('dateInput').value = ''; 
+                currentData.date = null;
+            } else {
+                currentData.date = dateStr;
+            }
         }
 
         function renderStylists() {
             document.getElementById('stylistList').innerHTML = STYLISTS.map(s => `
-                <div onclick="selectStylist('${s.id}')" id="stylist-${s.id}" class="p-3 bg-white border-2 border-transparent rounded-2xl cursor-pointer transition-all hover:border-gray-200 flex items-center mb-2 shadow-sm">
-                    <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-100">
-                        ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-[10px] text-gray-500 font-bold">不指定</div>'}
-                    </div>
-                    <div class="font-bold text-gray-700">${s.name}</div>
-                </div>`).join('');
-            selectStylist('any');
-        }
-
-        function renderTimeSlots() {
-            // 時間設定: 11:00 ~ 19:00
-            const times = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
-            document.getElementById('timeSlots').innerHTML = times.map(t => `
-                <button onclick="selectTime('${t}')" id="time-${t.replace(':','')}" class="py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-500 hover:border-[#ea5548] hover:text-[#ea5548] transition-all bg-white">${t}</button>
-            `).join('');
-        }
-
-        function selectService(id) {
-            document.querySelectorAll('#serviceList > div').forEach(el => el.classList.remove('selected-card'));
-            document.getElementById(`service-${id}`).classList.add('selected-card');
-            currentData.service = SERVICES.find(s => s.id === id);
-            setTimeout(() => changeStep(2), 300);
-        }
-
-        function selectStylist(id) {
-            document.querySelectorAll('#stylistList > div').forEach(el => el.classList.remove('selected-card'));
-            document.getElementById(`stylist-${id}`).classList.add('selected-card');
-            currentData.stylist = STYLISTS.find(s => s.id === id);
-            const dateInput = document.getElementById('dateInput');
-            if (dateInput.value) checkDateAvailability(dateInput.value);
-        }
-
-        function selectTime(time) {
-            if(!currentData.date) { alert("請先選擇日期！"); return; }
-            document.querySelectorAll('#timeSlots > button').forEach(el => { el.classList.remove('bg-[#ea5548]', 'text-white', 'border-transparent'); el.classList.add('text-gray-500', 'border-gray-200'); });
-            const btn = document.getElementById(`time-${time.replace(':','')}`);
-            btn.classList.remove('text-gray-500', 'border-gray-200');
-            btn.classList.add('bg-[#ea5548]', 'text-white', 'border-transparent');
-            currentData.time = time;
-            const nextBtn = document.getElementById('btnStep3Next');
-            nextBtn.disabled = false;
-            nextBtn.classList.remove('bg-gray-300');
-            nextBtn.classList.add('bg-[#ea5548]');
-        }
-
-        function changeStep(step) {
-            document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`step${step}`).classList.remove('hidden');
-            document.getElementById('progressBar').style.width = `${step * 25}%`;
-            if(step === 4) {
-                document.getElementById('confirmService').innerText = currentData.service.name;
-                document.getElementById('confirmStylist').innerText = currentData.stylist.name;
-                const dateVal = document.getElementById('dateInput').value;
-                document.getElementById('confirmDateTime').innerText = `${dateVal} ${currentData.time}`;
-                document.getElementById('confirmName').innerText = document.getElementById('userName').innerText;
-            }
-        }
-
-        async function submitBooking() {
-            const btn = document.querySelector('#step4 button');
-            const originalText = btn.innerText;
-            btn.innerText = "資料傳送中...";
-            btn.disabled = true;
-
-            const bookingData = {
-                created_at: new Date().toLocaleString(),
-                name: document.getElementById('userName').innerText,
-                service: currentData.service.name,
-                stylist: currentData.stylist.name,
-                date: document.getElementById('dateInput').value,
-                time: currentData.time,
-                price: currentData.service.price
-            };
-
-            try {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(bookingData), mode: 'no-cors', headers: { 'Content-Type': 'application/json' } });
-                if (liff.isInClient()) {
-                    await liff.sendMessages([{
-                        type: 'text',
-                        text: `【預約成功】\n姓名：${bookingData.name}\n項目：${bookingData.service}\n老師：${bookingData.stylist}\n時間：${bookingData.date} ${bookingData.time}\n費用：${typeof bookingData.price === 'number' ? '$'+bookingData.price : bookingData.price}`
-                    }]);
-                }
-                changeStep('Success');
-            } catch (err) {
-                alert("連線錯誤，請重試");
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
+                <div onclick="selectStylist('${s.id}')" id="stylist-${s.id}" class="p-3 bg-white border-2 border-transparent rounded-2xl
