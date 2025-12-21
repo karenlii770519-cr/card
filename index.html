@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>指要妳 Just ForYou | 線上預約 (v2.0)</title>
+    <title>指要妳 Just ForYou | 線上預約</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -118,6 +118,7 @@
     </div>
 
     <script>
+        // ⚠️ 您的設定完全保留 ⚠️
         const LIFF_ID = "2008649114-uMkSDYgW"; 
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzQN8MHKglutmDGOOlcgDVbCswoYJR3hzfDBaiIMSYcisShfOehiE8TTTSqedds_2g/exec";
 
@@ -160,10 +161,10 @@
         let bookedTimes = []; 
 
         window.onload = async function() {
-            // 🚨 優先執行：先把畫面畫出來，確保時間選單不會消失！
+            // 🚨 修正：只先畫出類別和設計師，不要畫時間 (因為還沒選服務，會當機)
             renderCategories(); 
             renderStylists(); 
-            renderTimeSlots();
+            // renderTimeSlots(); // <--- 兇手就是這行，我把它拿掉了！
             
             // 預設日期設定
             const dateInput = document.getElementById('dateInput');
@@ -176,10 +177,9 @@
                 if (!liff.isLoggedIn()) { liff.login(); return; }
                 const profile = await liff.getProfile();
                 
-                // 🚨 防當機機制：檢查欄位是否存在才填寫
+                // 防當機：填寫名字
                 const nameEl = document.getElementById('userName');
                 if(nameEl) nameEl.innerText = profile.displayName;
-                
                 const imgEl = document.getElementById('userImg');
                 if(imgEl && profile.pictureUrl) imgEl.src = profile.pictureUrl;
                 
@@ -190,8 +190,7 @@
                 document.getElementById('app').classList.remove('hidden');
 
             } catch (err) {
-                // 萬一 LIFF 連線失敗，仍然顯示畫面讓使用者操作 (雖然不能送出)
-                alert("LIFF 連線錯誤 (請確認 LIFF ID 設定)：" + err);
+                alert("連線警示：" + err);
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
             }
@@ -229,8 +228,20 @@
         }
         function renderTimeSlots() {
             const times = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
-            const requiredSlots = Math.ceil(currentData.service.time / 60); currentData.durationSlots = requiredSlots;
-            document.getElementById('durationHint').innerText = `(需 ${currentData.service.time} 分鐘)`;
+            
+            // 🚨 防呆：如果還沒選服務，預設當作 1 格，避免當機
+            let requiredSlots = 1;
+            if (currentData.service) {
+                requiredSlots = Math.ceil(currentData.service.time / 60);
+            }
+            currentData.durationSlots = requiredSlots;
+
+            if (currentData.service) {
+                document.getElementById('durationHint').innerText = `(需 ${currentData.service.time} 分鐘)`;
+            } else {
+                document.getElementById('durationHint').innerText = "";
+            }
+
             document.getElementById('timeSlots').innerHTML = times.map((t, index) => {
                 let isBooked = bookedTimes.includes(t); let isAvailable = !isBooked;
                 if (isAvailable && requiredSlots > 1) { for (let i = 1; i < requiredSlots; i++) { if (index + i >= times.length || bookedTimes.includes(times[index + i])) { isAvailable = false; break; } } }
