@@ -21,6 +21,14 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transform: scale(1.02);
         }
+        /* 禁用按鈕樣式 */
+        .btn-disabled {
+            background-color: #e5e7eb !important; /* 灰色背景 */
+            color: #9ca3af !important; /* 灰色文字 */
+            cursor: not-allowed !important;
+            border-color: #e5e7eb !important;
+            text-decoration: line-through;
+        }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         .hidden { display: none !important; }
@@ -54,8 +62,7 @@
         <main class="px-4">
             <div id="step1" class="step-content animate-fade-in">
                 <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">請問想做什麼項目？</h2>
-                <div id="categoryList" class="grid grid-cols-2 gap-3 pb-8">
-                    </div>
+                <div id="categoryList" class="grid grid-cols-2 gap-3 pb-8"></div>
             </div>
 
             <div id="step2" class="step-content hidden animate-fade-in">
@@ -84,7 +91,10 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-2xl shadow-sm mb-4">
-                    <label class="block text-xs font-bold text-gray-400 mb-2">時段 (11:00 - 19:00)</label>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-bold text-gray-400">時段 (11:00 - 19:00)</label>
+                        <span id="timeLoading" class="text-xs text-[#ea5548] font-bold hidden">查詢空檔中...</span>
+                    </div>
                     <div id="timeSlots" class="grid grid-cols-3 gap-2"></div>
                 </div>
 
@@ -136,7 +146,6 @@
             stylistLeaves: { 's1': [], 's2': [], 's3': [] }
         };
 
-        // --- 1. 定義大分類 (依您的要求修改) ---
         const CATEGORIES = [
             { id: 'hand', name: '手部光療', icon: '💅' },
             { id: 'foot', name: '足部光療', icon: '🦶' },
@@ -144,9 +153,7 @@
             { id: 'care', name: '保養', icon: '🌿' }
         ];
 
-        // --- 2. 服務項目 (重新分配 category) ---
         const SERVICES = [
-            // === 手部光療 (hand) ===
             { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
             { category: 'hand', id: 'h2', name: '【手部】貓眼', price: 600, time: 90 },
             { category: 'hand', id: 'h3', name: '【手部】相簿 $600 款', price: 600, time: 90 },
@@ -154,25 +161,19 @@
             { category: 'hand', id: 'h5', name: '【手部】暈染、亮粉等', price: 700, time: 90 },
             { category: 'hand', id: 'h6', name: '【手部】法式', price: 800, time: 120 },
             { category: 'hand', id: 'h7', name: '【手部】自帶圖 (line私訊報價)', price: '依報價', time: 150 },
-            { category: 'hand', id: 'c2', name: '【延甲】甲片延甲 (10指)', price: 1000, time: 60 }, // 延甲歸類在手部光療
+            { category: 'hand', id: 'c2', name: '【延甲】甲片延甲 (10指)', price: 1000, time: 60 }, 
             { category: 'hand', id: 'c3', name: '【延甲】甲片延甲 (5指內)', price: 500, time: 30 },
-            { category: 'hand', id: 'm3', name: '【手足】同時光療 (單色)', price: 1000, time: 120 }, // 手足優惠
-
-            // === 足部光療 (foot) ===
+            { category: 'hand', id: 'm3', name: '【手足】同時光療 (單色)', price: 1000, time: 120 }, 
             { category: 'foot', id: 'f1', name: '【足部】單色/跳色', price: 600, time: 60 },
             { category: 'foot', id: 'f2', name: '【足部】貓眼', price: 600, time: 70 },
             { category: 'foot', id: 'f3', name: '【足部】相簿 $600 款', price: 600, time: 70 },
             { category: 'foot', id: 'f4', name: '【足部】相簿 $700 款', price: 700, time: 80 },
             { category: 'foot', id: 'f5', name: '【足部】自帶圖 (line私訊報價)', price: '依報價', time: 120 },
-
-            // === 卸甲 (remove) ===
             { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 },
             { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
             { category: 'remove', id: 'm1', name: '【組合】手部卸甲 + 續作', price: '依款式', time: 90 },
             { category: 'remove', id: 'm2', name: '【組合】足部卸甲 + 續作', price: '依款式', time: 90 },
             { category: 'remove', id: 'm4', name: '【組合】手足同時卸甲', price: 600, time: 60 },
-
-            // === 保養 (care) ===
             { category: 'care', id: 'c1', name: '【保養】手部保養', price: 600, time: 45 },
             { category: 'care', id: 'c4', name: '【保養】足部修養/硬皮', price: '現場報價', time: 30 }
         ];
@@ -183,7 +184,9 @@
             { id: 's2', name: '敬', img: 'https://www.dropbox.com/scl/fi/70tckw1bxps5sjph2ht27/p2.jpg?rlkey=js9dm1zc1h7yduwzha40trtvk&st=zmfv5fb2&raw=1' },
             { id: 's3', name: '芮綺', img: 'https://www.dropbox.com/scl/fi/fyonnvr9fhc2bni36ro22/p3.jpg?rlkey=06u8rsnb4n2pik7nnrdhfaqdb&st=bwzev9h4&raw=1' }
         ];
-let currentData = { category: null, service: null, stylist: STYLISTS[0], date: new Date().toISOString().split('T')[0], time: null, phone: '', userId: '', userImg: '' };
+
+        let currentData = { category: null, service: null, stylist: STYLISTS[0], date: new Date().toISOString().split('T')[0], time: null, phone: '', userId: '', userImg: '' };
+        let bookedTimes = []; // 儲存已預約時段
 
         window.onload = async function() {
             try {
@@ -202,17 +205,46 @@ let currentData = { category: null, service: null, stylist: STYLISTS[0], date: n
                 const dateInput = document.getElementById('dateInput');
                 dateInput.value = currentData.date;
                 dateInput.min = new Date().toISOString().split('T')[0];
-                dateInput.addEventListener('change', (e) => checkDateAvailability(e.target.value));
+                dateInput.addEventListener('change', (e) => handleDateOrStylistChange());
 
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
                 document.getElementById('app').classList.add('animate-fade-in');
+                
+                // 初始載入也檢查一次
+                handleDateOrStylistChange();
+
             } catch (err) {
                 console.error(err);
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
             }
         };
+
+        // --- 新增：處理日期或老師變更，去後端查時間 ---
+        async function handleDateOrStylistChange() {
+            const dateStr = document.getElementById('dateInput').value;
+            currentData.date = dateStr;
+            checkDateAvailability(dateStr); // 檢查公休
+
+            if (!dateStr) return;
+
+            // 顯示查詢中
+            document.getElementById('timeLoading').classList.remove('hidden');
+            document.querySelectorAll('#timeSlots button').forEach(b => b.disabled = true);
+
+            try {
+                // 呼叫 GAS 查詢
+                const response = await fetch(`${GAS_URL}?date=${dateStr}&stylist=${currentData.stylist.name}`);
+                bookedTimes = await response.json(); // 取得 ["11:00", "13:00"]
+            } catch (e) {
+                console.error("Fetch Error:", e);
+                bookedTimes = [];
+            } finally {
+                document.getElementById('timeLoading').classList.add('hidden');
+                renderTimeSlots(); // 重新渲染按鈕
+            }
+        }
 
         function renderCategories() {
             document.getElementById('categoryList').innerHTML = CATEGORIES.map(c => `
@@ -251,8 +283,6 @@ let currentData = { category: null, service: null, stylist: STYLISTS[0], date: n
                 alert(errorMsg);
                 document.getElementById('dateInput').value = ''; 
                 currentData.date = null;
-            } else {
-                currentData.date = dateStr;
             }
         }
 
@@ -267,11 +297,20 @@ let currentData = { category: null, service: null, stylist: STYLISTS[0], date: n
             selectStylist('any');
         }
 
+        // --- 更新：根據 bookedTimes 來停用按鈕 ---
         function renderTimeSlots() {
             const times = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
-            document.getElementById('timeSlots').innerHTML = times.map(t => `
-                <button onclick="selectTime('${t}')" id="time-${t.replace(':','')}" class="py-2 border border-gray-200 rounded-lg text-sm font-bold text-gray-500 hover:border-[#ea5548] hover:text-[#ea5548] transition-all bg-white">${t}</button>
-            `).join('');
+            
+            document.getElementById('timeSlots').innerHTML = times.map(t => {
+                const isBooked = bookedTimes.includes(t); // 檢查是否被約走
+                return `
+                <button onclick="selectTime('${t}')" id="time-${t.replace(':','')}" 
+                    ${isBooked ? 'disabled' : ''} 
+                    class="py-2 border border-gray-200 rounded-lg text-sm font-bold transition-all bg-white 
+                    ${isBooked ? 'btn-disabled' : 'text-gray-500 hover:border-[#ea5548] hover:text-[#ea5548]'}">
+                    ${t}
+                </button>
+            `}).join('');
         }
 
         function selectService(id) {
@@ -285,12 +324,18 @@ let currentData = { category: null, service: null, stylist: STYLISTS[0], date: n
             document.querySelectorAll('#stylistList > div').forEach(el => el.classList.remove('selected-card'));
             document.getElementById(`stylist-${id}`).classList.add('selected-card');
             currentData.stylist = STYLISTS.find(s => s.id === id);
-            const dateInput = document.getElementById('dateInput');
-            if (dateInput.value) checkDateAvailability(dateInput.value);
+            
+            // 換老師時，重新去查時間
+            handleDateOrStylistChange();
         }
 
         function selectTime(time) {
-            document.querySelectorAll('#timeSlots > button').forEach(el => { el.classList.remove('bg-[#ea5548]', 'text-white', 'border-transparent'); el.classList.add('text-gray-500', 'border-gray-200'); });
+            document.querySelectorAll('#timeSlots > button').forEach(el => { 
+                if(!el.disabled) {
+                    el.classList.remove('bg-[#ea5548]', 'text-white', 'border-transparent'); 
+                    el.classList.add('text-gray-500', 'border-gray-200'); 
+                }
+            });
             const btn = document.getElementById(`time-${time.replace(':','')}`);
             btn.classList.remove('text-gray-500', 'border-gray-200');
             btn.classList.add('bg-[#ea5548]', 'text-white', 'border-transparent');
@@ -349,7 +394,7 @@ let currentData = { category: null, service: null, stylist: STYLISTS[0], date: n
                 }
                 changeStep('Success');
             } catch (err) {
-                alert("連線錯誤，請重試");
+                alert("連線錯誤: " + err.toString());
                 btn.innerText = originalText;
                 btn.disabled = false;
             }
