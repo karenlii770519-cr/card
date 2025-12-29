@@ -124,7 +124,12 @@
 
         const SHOP_CONFIG = { closedWeekday: 3, holidays: ["2026-01-01"], stylistLeaves: {'s1':[],'s2':[],'s3':[]} };
         const CATEGORIES = [ {id:'hand',name:'手部光療',icon:'💅'}, {id:'foot',name:'足部光療',icon:'🦶'}, {id:'remove',name:'卸甲',icon:'✨'}, {id:'care',name:'保養',icon:'🌿'} ];
-        
+        // ✨ 設定淡書提示文字 (根據您的需求)
+  const HINTS = {
+    hand: '💡 <b>續作優惠：</b>本店續作 3 週內卸甲免費，請直接選擇此分類項目，不需額外加選卸甲。',
+    foot: '💡 <b>續作優惠：</b>本店續作 3 週內卸甲免費，請直接選擇此分類項目，不需額外加選卸甲。',
+    remove: '⚠️ <b>注意：</b>若指甲狀況為「超過 3 週」或「非本店續作」，請在此分類勾選卸甲服務。'
+  };
         const services = [
   // 手部 Hand
   { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
