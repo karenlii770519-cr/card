@@ -14,6 +14,9 @@
         .selected-card { border-color: #ea5548 !important; background-color: white !important; transform: scale(1.02); }
         .btn-disabled { background-color: #d1d5db !important; color: #9ca3af !important; cursor: not-allowed !important; pointer-events: none; }
         .hidden { display: none !important; }
+        /* 隱藏卷軸但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="pb-12">
@@ -23,8 +26,17 @@
         <p class="text-[#8F2C2F] font-bold">系統載入中...</p>
     </div>
 
-    <div id="app" class="max-w-md mx-auto min-h-screen relative hidden">
+    <div id="app" class="max-w-md mx-auto min-h-screen relative hidden flex flex-col">
         
+        <div class="bg-[#FFF8F0] text-gray-600 text-xs px-4 py-3 border-b border-orange-100 text-center leading-relaxed">
+            <p class="font-bold text-[#ea5548] mb-1">【續作優惠】</p>
+            <p>本店續作 3 週內卸甲免費</p>
+            <p>請直接選擇【手部】或【足部】分類項目<br>不需額外加選卸甲。</p>
+            <div class="mt-2 pt-2 border-t border-orange-100 text-[11px] text-gray-400">
+                ⚠️ 注意：指甲狀況為「超過 3 週」或「非本店續作」，請務必選擇【卸甲】項目預約。
+            </div>
+        </div>
+
         <header class="p-6 flex justify-between items-center bg-white shadow-sm mb-4 sticky top-0 z-10">
             <div><h1 class="text-xl font-bold text-gray-700">指要妳 <span class="text-[#ea5548] text-sm block">Just ForYou Nail salon</span></h1></div>
             <div class="flex items-center gap-3">
@@ -68,7 +80,7 @@
                     <h2 class="text-lg font-bold text-gray-700 mb-4 border-l-4 border-[#8F2C2F] pl-3">預約時間</h2>
                     <div class="bg-white p-4 rounded-2xl shadow-sm mb-4">
                         <label class="block text-xs font-bold text-gray-400 mb-2">日期</label>
-                        <input type="date" id="dateInput" class="w-full bg-gray-50 p-3 rounded-xl font-bold text-gray-700 outline-none border focus:border-[#ea5548]">
+                        <input type="date" id="dateInput" class="w-full min-w-0 appearance-none bg-gray-50 px-3 py-3 rounded-xl font-bold text-gray-700 text-base outline-none border focus:border-[#ea5548]">
                     </div>
                     <div class="bg-white p-4 rounded-2xl shadow-sm mb-4">
                         <div class="flex justify-between items-center mb-2">
@@ -126,7 +138,6 @@
         const CATEGORIES = [ {id:'hand',name:'手部光療',icon:'💅'}, {id:'foot',name:'足部光療',icon:'🦶'}, {id:'remove',name:'卸甲',icon:'✨'}, {id:'care',name:'保養',icon:'🌿'} ];
         
         const SERVICES = [
-          // 手部 Hand
           { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
           { category: 'hand', id: 'h2', name: '【手部】相簿 $600 款', price: 600, time: 60 },
           { category: 'hand', id: 'h3', name: '【手部】相簿 $700 款', price: 700, time: 60 },
@@ -138,8 +149,6 @@
           { category: 'hand', id: 'h9', name: '【手部】法式/保養', price: 1100, time: 180 },
           { category: 'hand', id: 'h10', name: '【手部】甲片延甲 (10指)', price: 1000, time: 60 },
           { category: 'hand', id: 'h11', name: '【手部】甲片延甲 (5指內)', price: 500, time: 30 },
-          
-          // 足部 Foot
           { category: 'foot', id: 'f1', name: '【足部】單色/跳色', price: 500, time: 60 },
           { category: 'foot', id: 'f2', name: '【足部】相簿 $600 款', price: 600, time: 60 },
           { category: 'foot', id: 'f3', name: '【足部】相簿 $700 款', price: 700, time: 60 },
@@ -147,16 +156,12 @@
           { category: 'foot', id: 'f5', name: '【足部】光療/保養', price: 1100, time: 90 },
           { category: 'foot', id: 'f6', name: '【足部】相簿600/保養', price: 1200, time: 90 },
           { category: 'foot', id: 'f7', name: '【足部】相簿700/保養', price: 1300, time: 90 },
-
-          // 卸甲 Remove
           { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 },
           { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
           { category: 'remove', id: 'r3', name: '【組合】光療單色/卸甲(超過三周或新客)/保養', price: 1400, time: 90 },
           { category: 'remove', id: 'r4', name: '【組合】相簿600/卸甲(超過三周或新客)/保養', price: 1500, time: 90 },
           { category: 'remove', id: 'r5', name: '【組合】相簿700/卸甲(超過三周或新客)/保養', price: 1600, time: 90 },
           { category: 'remove', id: 'r6', name: '【組合】法式/卸甲(超過三周或新客)/保養', price: 1700, time: 180 },
-
-          // 保養 Care
           { category: 'care', id: 'c1', name: '【保養】手部保養', price: 300, time: 45 },
           { category: 'care', id: 'c2', name: '【保養】足部修養', price: 600, time: 60 }
         ];
@@ -236,7 +241,6 @@
             try { const response = await fetch(`${GAS_URL}?date=${dateStr}&stylist=${currentData.stylist.name}`); bookedTimes = await response.json(); } catch (e) { bookedTimes = []; } finally { document.getElementById('timeLoading').classList.add('hidden'); renderTimeSlots(); }
         }
         
-        // 🔥 這邊就是修改後的 renderTimeSlots 函式 (30分鐘版)
         function renderTimeSlots() {
             const times = [
                 '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
