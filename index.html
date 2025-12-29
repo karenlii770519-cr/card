@@ -253,24 +253,49 @@ const SERVICES = [
                 return `<button onclick="selectTime('${t}', ${index})" id="time-${index}" ${!isAvailable ? 'disabled' : ''} class="py-2 border border-gray-200 rounded-lg text-sm font-bold bg-white ${!isAvailable ? 'btn-disabled' : 'text-gray-500 hover:border-[#ea5548]'}">${t}</button>`;
             }).join('');
         }
-        function selectTime(startTime, startIndex) {
-            const times = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
-            document.querySelectorAll('#timeSlots button').forEach(b => { if(!b.disabled) b.className = "py-2 border border-gray-200 rounded-lg text-sm font-bold bg-white text-gray-500"; });
-            let selectedSlots = []; for (let i = 0; i < currentData.durationSlots; i++) { let btn = document.getElementById(`time-${startIndex + i}`); if(btn) { btn.className = "py-2 border border-[#ea5548] rounded-lg text-sm font-bold bg-[#ea5548] text-white"; selectedSlots.push(times[startIndex + i]); } }
-            currentData.time = selectedSlots.join(",");
-        }
-        function renderCategories() { document.getElementById('categoryList').innerHTML = CATEGORIES.map(c => `<div onclick="selectCategory('${c.id}')" class="p-4 border rounded-xl text-center cursor-pointer hover:border-[#ea5548]">${c.icon} ${c.name}</div>`).join(''); }
-        function selectCategory(id) { const filtered = SERVICES.filter(s => s.category === id); document.getElementById('serviceList').innerHTML = filtered.map(s => `<div onclick="selectService('${s.id}')" class="p-4 border rounded-xl flex justify-between cursor-pointer hover:border-[#ea5548]"><span>${s.name}</span><span class="text-[#8F2C2F]">${typeof s.price==='number'?'$'+s.price:s.price}</span></div>`).join(''); changeStep(2); }
-        function selectService(id) { currentData.service = SERVICES.find(s => s.id === id); changeStep(3); }
-        function renderStylists() { 
-            document.getElementById('stylistList').innerHTML = STYLISTS.map(s => `
-                <div onclick="selectStylist('${s.id}')" class="p-3 border rounded-xl flex items-center gap-3 cursor-pointer hover:border-[#ea5548]">
-                    <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
-                        ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-[10px] text-gray-500 font-bold">不指定</div>'}
-                    </div>
-                    <div>${s.name}</div>
-                </div>
-            `).join(''); 
+       function renderTimeSlots() {
+            // ⚠️ 修改 1：補上 30 分的時段，並且只列到 19:00
+            const times = [
+                '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+                '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
+                '17:00', '17:30', '18:00', '18:30', '19:00'
+            ];
+            
+            // 計算需要幾格時間
+            let requiredSlots = 1;
+            if (currentData.service) {
+                // ⚠️ 修改 2：這裡一定要改成除以 30！
+                // 例如：服務 60 分鐘 / 30 = 需要 2 格
+                requiredSlots = Math.ceil(currentData.service.time / 30);
+            }
+            currentData.durationSlots = requiredSlots;
+
+            // 顯示提示文字
+            if (currentData.service) {
+                document.getElementById('durationHint').innerText = `(需 ${currentData.service.time} 分鐘)`;
+            } else {
+                document.getElementById('durationHint').innerText = "";
+            }
+
+            // 產生按鈕
+            document.getElementById('timeSlots').innerHTML = times.map((t, index) => {
+                let isBooked = bookedTimes.includes(t); 
+                let isAvailable = !isBooked;
+
+                // 檢查連續時段是否都有空
+                // 例如：如果要預約 60 分鐘 (2格)，就要檢查現在這格(index) 跟 下一格(index+1) 是否都有空
+                if (isAvailable && requiredSlots > 1) { 
+                    for (let i = 1; i < requiredSlots; i++) { 
+                        // 如果超出時間表(例如選了19:00但需要2小時) 或 後面的時段被訂走了
+                        if (index + i >= times.length || bookedTimes.includes(times[index + i])) { 
+                            isAvailable = false; 
+                            break; 
+                        } 
+                    } 
+                }
+                
+                return `<button onclick="selectTime('${t}', ${index})" id="time-${index}" ${!isAvailable ? 'disabled' : ''} class="py-2 border border-gray-200 rounded-lg text-sm font-bold bg-white ${!isAvailable ? 'btn-disabled' : 'text-gray-500 hover:border-[#ea5548]'}">${t}</button>`;
+            }).join('');
         }
         function selectStylist(id) { currentData.stylist = STYLISTS.find(s => s.id === id); if(currentData.date) handleDateOrStylistChange(); }
         function validateAndNext() { currentData.phone = document.getElementById('userPhone').value; if(!currentData.date || !currentData.time || !currentData.phone) return alert("請填寫完整"); changeStep(5); }
