@@ -125,30 +125,42 @@
         const SHOP_CONFIG = { closedWeekday: 3, holidays: ["2026-01-01"], stylistLeaves: {'s1':[],'s2':[],'s3':[]} };
         const CATEGORIES = [ {id:'hand',name:'手部光療',icon:'💅'}, {id:'foot',name:'足部光療',icon:'🦶'}, {id:'remove',name:'卸甲',icon:'✨'}, {id:'care',name:'保養',icon:'🌿'} ];
         
-        const SERVICES = [
-            { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
-            { category: 'hand', id: 'h2', name: '【手部】光療單色/卸甲/保養', price: 1300, time: 90 }, 
-            { category: 'hand', id: 'h3', name: '【手部】相簿 $600 款', price: 600, time: 60 },
-            { category: 'hand', id: 'h4', name: '【手部】相簿 $700 款', price: 700, time: 60 },
-            { category: 'hand', id: 'h5', name: '【手部】光療/保養', price: 1100, time: 90 },
-            { category: 'hand', id: 'h6', name: '【手部】法式', price: 800, time: 120 }, 
-            { category: 'hand', id: 'h7', name: '【手部】自帶圖', price: '依line私訊報價', time: 60 }, 
-            { category: 'hand', id: 'c2', name: '【延甲】甲片延甲 (10指)', price: 1000, time: 60 }, 
-            { category: 'hand', id: 'c3', name: '【延甲】甲片延甲 (5指內)', price: 500, time: 30 },
-            { category: 'hand', id: 'm3', name: '【手足】同時單色光療', price: 1000, time: 120 }, 
-            { category: 'foot', id: 'f1', name: '【足部】單色/跳色', price: 600, time: 60 },
-            { category: 'foot', id: 'f2', name: '【足部】光療單色/卸甲/保養', price: 1300, time: 90 },
-            { category: 'foot', id: 'f3', name: '【足部】相簿 $600 款', price: 600, time: 70 },
-            { category: 'foot', id: 'f4', name: '【足部】相簿 $700 款', price: 700, time: 80 },
-            { category: 'foot', id: 'f5', name: '【足部】自帶圖', price: '依line私訊報價', time: 60 },
-            { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 200, time: 30 },
-            { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
-            { category: 'remove', id: 'm1', name: '【組合】手部卸甲+續作', price: '依款式', time: 90 },
-            { category: 'remove', id: 'm2', name: '【組合】手/足光療單色/卸甲/保養', price: 1300, time: 90 },
-            { category: 'remove', id: 'm4', name: '【組合】手/足單色光療+保養', price: 1100, time: 90 },
-            { category: 'care', id: 'c1', name: '【保養】手部保養', price: 600, time: 45 },
-            { category: 'care', id: 'c4', name: '【保養】足部修養', price: '現場報價', time: 30 }
-        ];
+        const services = [
+  // 手部 Hand
+  { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
+  { category: 'hand', id: 'h2', name: '【手部】相簿 $600 款', price: 600, time: 60 },
+  { category: 'hand', id: 'h3', name: '【手部】相簿 $700 款', price: 700, time: 60 },
+  { category: 'hand', id: 'h4', name: '【手部】法式', price: 800, time: 120 },
+  { category: 'hand', id: 'h5', name: '【手部】自帶圖', price: '依line私訊報價', time: 90 },
+  { category: 'hand', id: 'h6', name: '【手部】光療/保養', price: 800, time: 90 },
+  { category: 'hand', id: 'h7', name: '【手部】相簿600/保養', price: 900, time: 90 },
+  { category: 'hand', id: 'h8', name: '【手部】相簿700/保養', price: 1000, time: 90 },
+  { category: 'hand', id: 'h9', name: '【手部】法式/保養', price: 1100, time: 180 },
+  { category: 'hand', id: 'h10', name: '【手部】甲片延甲 (10指)', price: 1000, time: 60 },
+  { category: 'hand', id: 'h11', name: '【手部】甲片延甲 (5指內)', price: 500, time: 30 },
+
+  // 足部 Foot
+  { category: 'foot', id: 'f1', name: '【足部】單色/跳色', price: 500, time: 60 },
+  { category: 'foot', id: 'f2', name: '【足部】相簿 $600 款', price: 600, time: 60 },
+  { category: 'foot', id: 'f3', name: '【足部】相簿 $700 款', price: 700, time: 60 },
+  { category: 'foot', id: 'f4', name: '【足部】自帶圖', price: '依line私訊報價', time: 90 },
+  { category: 'foot', id: 'f5', name: '【足部】光療/保養', price: 1100, time: 90 },
+  { category: 'foot', id: 'f6', name: '【足部】相簿600/保養', price: 1200, time: 90 },
+  { category: 'foot', id: 'f7', name: '【足部】相簿700/保養', price: 1300, time: 90 },
+  // 已移除重複的 f8
+
+  // 卸甲 Remove
+  { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 },
+  { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
+  { category: 'remove', id: 'r3', name: '【組合】光療單色/卸甲(超過三周或新客)/保養', price: 1400, time: 90 },
+  { category: 'remove', id: 'r4', name: '【組合】相簿600/卸甲(超過三周或新客)/保養', price: 1500, time: 90 },
+  { category: 'remove', id: 'r5', name: '【組合】相簿700/卸甲(超過三周或新客)/保養', price: 1600, time: 90 },
+  { category: 'remove', id: 'r6', name: '【組合】法式/卸甲(超過三周或新客)/保養', price: 1700, time: 180 },
+
+  // 保養 Care
+  { category: 'care', id: 'c1', name: '【保養】手部保養', price: 300, time: 45 },
+  { category: 'care', id: 'c2', name: '【保養】足部修養', price: 600, time: 60 }
+];
 
         const STYLISTS = [ 
             { id: 'any', name: '不指定設計師', img: '' },
