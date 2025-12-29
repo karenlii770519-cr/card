@@ -124,37 +124,43 @@
 
         const SHOP_CONFIG = { closedWeekday: 3, holidays: ["2026-01-01"], stylistLeaves: {'s1':[],'s2':[],'s3':[]} };
         const CATEGORIES = [ {id:'hand',name:'手部光療',icon:'💅'}, {id:'foot',name:'足部光療',icon:'🦶'}, {id:'remove',name:'卸甲',icon:'✨'}, {id:'care',name:'保養',icon:'🌿'} ];
-       
-       // 🚨 修改這裡：把原本的 const services 改成 const SERVICES (全大寫)
-const SERVICES = [
-  // 手部 Hand
-  { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
-  { category: 'hand', id: 'h2', name: '【手部】相簿 $600 款', price: 600, time: 60 },
-  { category: 'hand', id: 'h3', name: '【手部】相簿 $700 款', price: 700, time: 60 },
-  { category: 'hand', id: 'h4', name: '【手部】法式', price: 800, time: 120 },
-  { category: 'hand', id: 'h5', name: '【手部】自帶圖', price: '依line私訊報價', time: 90 },
-  { category: 'hand', id: 'h6', name: '【手部】光療/保養', price: 800, time: 90 },
-  { category: 'hand', id: 'h7', name: '【手部】相簿600/保養', price: 900, time: 90 },
-  { category: 'hand', id: 'h8', name: '【手部】相簿700/保養', price: 1000, time: 90 },
-  { category: 'hand', id: 'h9', name: '【手部】法式/保養', price: 1100, time: 180 },
-  { category: 'hand', id: 'h10', name: '【手部】甲片延甲 (10指)', price: 1000, time: 60 },
-  { category: 'hand', id: 'h11', name: '【手部】甲片延甲 (5指內)', price: 500, time: 30 },
-  { category: 'foot', id: 'f1', name: '【足部】單色/跳色', price: 500, time: 60 },
-  { category: 'foot', id: 'f2', name: '【足部】相簿 $600 款', price: 600, time: 60 },
-  { category: 'foot', id: 'f3', name: '【足部】相簿 $700 款', price: 700, time: 60 },
-  { category: 'foot', id: 'f4', name: '【足部】自帶圖', price: '依line私訊報價', time: 90 },
-  { category: 'foot', id: 'f5', name: '【足部】光療/保養', price: 1100, time: 90 },
-  { category: 'foot', id: 'f6', name: '【足部】相簿600/保養', price: 1200, time: 90 },
-  { category: 'foot', id: 'f7', name: '【足部】相簿700/保養', price: 1300, time: 90 },
-  { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 },
-  { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
-  { category: 'remove', id: 'r3', name: '【組合】光療單色/卸甲(超過三周或新客)/保養', price: 1400, time: 90 },
-  { category: 'remove', id: 'r4', name: '【組合】相簿600/卸甲(超過三周或新客)/保養', price: 1500, time: 90 },
-  { category: 'remove', id: 'r5', name: '【組合】相簿700/卸甲(超過三周或新客)/保養', price: 1600, time: 90 },
-  { category: 'remove', id: 'r6', name: '【組合】法式/卸甲(超過三周或新客)/保養', price: 1700, time: 180 },
-  { category: 'care', id: 'c1', name: '【保養】手部保養', price: 300, time: 45 },
-  { category: 'care', id: 'c2', name: '【保養】足部修養', price: 600, time: 60 }
-];
+        
+        const SERVICES = [
+          // 手部 Hand
+          { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
+          { category: 'hand', id: 'h2', name: '【手部】相簿 $600 款', price: 600, time: 60 },
+          { category: 'hand', id: 'h3', name: '【手部】相簿 $700 款', price: 700, time: 60 },
+          { category: 'hand', id: 'h4', name: '【手部】法式', price: 800, time: 120 },
+          { category: 'hand', id: 'h5', name: '【手部】自帶圖', price: '依line私訊報價', time: 90 },
+          { category: 'hand', id: 'h6', name: '【手部】光療/保養', price: 800, time: 90 },
+          { category: 'hand', id: 'h7', name: '【手部】相簿600/保養', price: 900, time: 90 },
+          { category: 'hand', id: 'h8', name: '【手部】相簿700/保養', price: 1000, time: 90 },
+          { category: 'hand', id: 'h9', name: '【手部】法式/保養', price: 1100, time: 180 },
+          { category: 'hand', id: 'h10', name: '【手部】甲片延甲 (10指)', price: 1000, time: 60 },
+          { category: 'hand', id: 'h11', name: '【手部】甲片延甲 (5指內)', price: 500, time: 30 },
+          
+          // 足部 Foot
+          { category: 'foot', id: 'f1', name: '【足部】單色/跳色', price: 500, time: 60 },
+          { category: 'foot', id: 'f2', name: '【足部】相簿 $600 款', price: 600, time: 60 },
+          { category: 'foot', id: 'f3', name: '【足部】相簿 $700 款', price: 700, time: 60 },
+          { category: 'foot', id: 'f4', name: '【足部】自帶圖', price: '依line私訊報價', time: 90 },
+          { category: 'foot', id: 'f5', name: '【足部】光療/保養', price: 1100, time: 90 },
+          { category: 'foot', id: 'f6', name: '【足部】相簿600/保養', price: 1200, time: 90 },
+          { category: 'foot', id: 'f7', name: '【足部】相簿700/保養', price: 1300, time: 90 },
+
+          // 卸甲 Remove
+          { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 },
+          { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
+          { category: 'remove', id: 'r3', name: '【組合】光療單色/卸甲(超過三周或新客)/保養', price: 1400, time: 90 },
+          { category: 'remove', id: 'r4', name: '【組合】相簿600/卸甲(超過三周或新客)/保養', price: 1500, time: 90 },
+          { category: 'remove', id: 'r5', name: '【組合】相簿700/卸甲(超過三周或新客)/保養', price: 1600, time: 90 },
+          { category: 'remove', id: 'r6', name: '【組合】法式/卸甲(超過三周或新客)/保養', price: 1700, time: 180 },
+
+          // 保養 Care
+          { category: 'care', id: 'c1', name: '【保養】手部保養', price: 300, time: 45 },
+          { category: 'care', id: 'c2', name: '【保養】足部修養', price: 600, time: 60 }
+        ];
+
         const STYLISTS = [ 
             { id: 'any', name: '不指定設計師', img: '' },
             { id: 's1', name: '虹', img: 'https://www.dropbox.com/scl/fi/p5yp0ff6r36hyv5314hqu/p1.jpg?rlkey=2r9l80w2q1ljzn2utoyev9gux&st=vjzu6w4h&raw=1' }, 
@@ -166,10 +172,8 @@ const SERVICES = [
         let bookedTimes = []; 
 
         window.onload = async function() {
-            // 🚨 修正：只先畫出類別和設計師，不要畫時間 (因為還沒選服務，會當機)
             renderCategories(); 
             renderStylists(); 
-            // renderTimeSlots(); // <--- 兇手就是這行，我把它拿掉了！
             
             // 預設日期設定
             const dateInput = document.getElementById('dateInput');
@@ -231,62 +235,34 @@ const SERVICES = [
             document.getElementById('timeLoading').classList.remove('hidden'); document.querySelectorAll('#timeSlots button').forEach(b => b.disabled = true);
             try { const response = await fetch(`${GAS_URL}?date=${dateStr}&stylist=${currentData.stylist.name}`); bookedTimes = await response.json(); } catch (e) { bookedTimes = []; } finally { document.getElementById('timeLoading').classList.add('hidden'); renderTimeSlots(); }
         }
+        
+        // 🔥 這邊就是修改後的 renderTimeSlots 函式 (30分鐘版)
         function renderTimeSlots() {
-            const times = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
-            
-            // 🚨 防呆：如果還沒選服務，預設當作 1 格，避免當機
-            let requiredSlots = 1;
-            if (currentData.service) {
-                requiredSlots = Math.ceil(currentData.service.time / 60);
-            }
-            currentData.durationSlots = requiredSlots;
-
-            if (currentData.service) {
-                document.getElementById('durationHint').innerText = `(需 ${currentData.service.time} 分鐘)`;
-            } else {
-                document.getElementById('durationHint').innerText = "";
-            }
-
-            document.getElementById('timeSlots').innerHTML = times.map((t, index) => {
-                let isBooked = bookedTimes.includes(t); let isAvailable = !isBooked;
-                if (isAvailable && requiredSlots > 1) { for (let i = 1; i < requiredSlots; i++) { if (index + i >= times.length || bookedTimes.includes(times[index + i])) { isAvailable = false; break; } } }
-                return `<button onclick="selectTime('${t}', ${index})" id="time-${index}" ${!isAvailable ? 'disabled' : ''} class="py-2 border border-gray-200 rounded-lg text-sm font-bold bg-white ${!isAvailable ? 'btn-disabled' : 'text-gray-500 hover:border-[#ea5548]'}">${t}</button>`;
-            }).join('');
-        }
-       function renderTimeSlots() {
-            // ⚠️ 修改 1：補上 30 分的時段，並且只列到 19:00
             const times = [
                 '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
                 '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
                 '17:00', '17:30', '18:00', '18:30', '19:00'
             ];
             
-            // 計算需要幾格時間
             let requiredSlots = 1;
             if (currentData.service) {
-                // ⚠️ 修改 2：這裡一定要改成除以 30！
-                // 例如：服務 60 分鐘 / 30 = 需要 2 格
+                // 除以 30，算出需要幾格 (例如 60分鐘=2格)
                 requiredSlots = Math.ceil(currentData.service.time / 30);
             }
             currentData.durationSlots = requiredSlots;
 
-            // 顯示提示文字
             if (currentData.service) {
                 document.getElementById('durationHint').innerText = `(需 ${currentData.service.time} 分鐘)`;
             } else {
                 document.getElementById('durationHint').innerText = "";
             }
 
-            // 產生按鈕
             document.getElementById('timeSlots').innerHTML = times.map((t, index) => {
                 let isBooked = bookedTimes.includes(t); 
                 let isAvailable = !isBooked;
 
-                // 檢查連續時段是否都有空
-                // 例如：如果要預約 60 分鐘 (2格)，就要檢查現在這格(index) 跟 下一格(index+1) 是否都有空
                 if (isAvailable && requiredSlots > 1) { 
                     for (let i = 1; i < requiredSlots; i++) { 
-                        // 如果超出時間表(例如選了19:00但需要2小時) 或 後面的時段被訂走了
                         if (index + i >= times.length || bookedTimes.includes(times[index + i])) { 
                             isAvailable = false; 
                             break; 
@@ -296,6 +272,31 @@ const SERVICES = [
                 
                 return `<button onclick="selectTime('${t}', ${index})" id="time-${index}" ${!isAvailable ? 'disabled' : ''} class="py-2 border border-gray-200 rounded-lg text-sm font-bold bg-white ${!isAvailable ? 'btn-disabled' : 'text-gray-500 hover:border-[#ea5548]'}">${t}</button>`;
             }).join('');
+        }
+
+        function selectTime(startTime, startIndex) {
+            const times = [
+                '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+                '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
+                '17:00', '17:30', '18:00', '18:30', '19:00'
+            ];
+            document.querySelectorAll('#timeSlots button').forEach(b => { if(!b.disabled) b.className = "py-2 border border-gray-200 rounded-lg text-sm font-bold bg-white text-gray-500"; });
+            let selectedSlots = []; for (let i = 0; i < currentData.durationSlots; i++) { let btn = document.getElementById(`time-${startIndex + i}`); if(btn) { btn.className = "py-2 border border-[#ea5548] rounded-lg text-sm font-bold bg-[#ea5548] text-white"; selectedSlots.push(times[startIndex + i]); } }
+            currentData.time = selectedSlots.join(",");
+        }
+
+        function renderCategories() { document.getElementById('categoryList').innerHTML = CATEGORIES.map(c => `<div onclick="selectCategory('${c.id}')" class="p-4 border rounded-xl text-center cursor-pointer hover:border-[#ea5548]">${c.icon} ${c.name}</div>`).join(''); }
+        function selectCategory(id) { const filtered = SERVICES.filter(s => s.category === id); document.getElementById('serviceList').innerHTML = filtered.map(s => `<div onclick="selectService('${s.id}')" class="p-4 border rounded-xl flex justify-between cursor-pointer hover:border-[#ea5548]"><span>${s.name}</span><span class="text-[#8F2C2F]">${typeof s.price==='number'?'$'+s.price:s.price}</span></div>`).join(''); changeStep(2); }
+        function selectService(id) { currentData.service = SERVICES.find(s => s.id === id); changeStep(3); }
+        function renderStylists() { 
+            document.getElementById('stylistList').innerHTML = STYLISTS.map(s => `
+                <div onclick="selectStylist('${s.id}')" class="p-3 border rounded-xl flex items-center gap-3 cursor-pointer hover:border-[#ea5548]">
+                    <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
+                        ${s.img ? `<img src="${s.img}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-[10px] text-gray-500 font-bold">不指定</div>'}
+                    </div>
+                    <div>${s.name}</div>
+                </div>
+            `).join(''); 
         }
         function selectStylist(id) { currentData.stylist = STYLISTS.find(s => s.id === id); if(currentData.date) handleDateOrStylistChange(); }
         function validateAndNext() { currentData.phone = document.getElementById('userPhone').value; if(!currentData.date || !currentData.time || !currentData.phone) return alert("請填寫完整"); changeStep(5); }
@@ -312,31 +313,22 @@ const SERVICES = [
       async function submitBooking() {
             const btn = document.querySelector('#step5 button'); 
             btn.innerText = "整理資料中...";
-            btn.disabled = true; // 避免重複按
+            btn.disabled = true; 
 
-            // 1. 🧹 資料清洗：把複雜的物件轉成簡單的文字
-            // 這樣 Google Sheet 就不會出現 {id=...} 這種亂碼了
             const payload = {
-                // 修正：明確抓取頁面上的名字
                 name: document.getElementById('userName').innerText || 'Guest',
                 phone: currentData.phone,
-                // 修正：只傳送「服務名稱」，不要傳整包
                 service: currentData.service ? currentData.service.name : '未選擇',
-                // 修正：只傳送「老師名字」
                 stylist: currentData.stylist ? currentData.stylist.name : '不指定',
                 date: currentData.date,
                 time: currentData.time,
-                // 修正：明確傳送價格
                 price: currentData.service ? currentData.service.price : 0,
                 userId: currentData.userId,
-                // 修正：傳送頭貼 (如果有的話)
                 userImg: document.getElementById('userImg').src || ''
             };
 
             try { 
                 btn.innerText = "傳送中...";
-                
-                // 2. 發送清洗過後的 payload，而不是原本的 currentData
                 await fetch(GAS_URL, { 
                     method: 'POST', 
                     body: JSON.stringify(payload), 
