@@ -1,0 +1,263 @@
+<style>
+  /* ========= Design Tokens ========= */
+  :root{
+    --brand-wine: #8F2C2F;
+    --brand-pink: #D86B76;
+    --brand-accent: #ea5548;
+
+    --bg-gray: #F3F4F6;
+    --bg: #fafafa;
+    --surface: #ffffff;
+
+    --text: #111827;
+    --muted: #6b7280;
+    --muted-2: #9ca3af;
+
+    --border: rgba(17,24,39,.10);
+    --border-strong: rgba(17,24,39,.14);
+
+    --shadow-sm: 0 4px 14px rgba(17,24,39,.06);
+    --shadow: 0 10px 28px rgba(17,24,39,.10);
+
+    --radius: 14px;
+    --radius-sm: 12px;
+
+    --space-1: 8px;
+    --space-2: 12px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-5: 32px;
+  }
+
+  /* ========= Base ========= */
+  body{
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* 讓整體更「服務頁」：背景加一點柔和漸層 */
+  body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(1200px 420px at 20% -10%, rgba(234,85,72,.10), transparent 55%),
+                radial-gradient(900px 380px at 90% 0%, rgba(143,44,47,.08), transparent 55%);
+    opacity: .9;
+  }
+
+  /* 讓 app 在漸層上顯得乾淨 */
+  #app{
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ========= 原本你有的狀態類：保留並優化 ========= */
+  .selected-card{
+    border-color: var(--brand-accent) !important;
+    background-color: var(--surface) !important;
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: var(--shadow) !important;
+  }
+
+  .btn-disabled{
+    background-color: #e5e7eb !important;
+    color: #9ca3af !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    border-color: rgba(17,24,39,.08) !important;
+  }
+
+  .hidden{ display: none !important; }
+
+  /* 隱藏卷軸但保留功能 */
+  .no-scrollbar::-webkit-scrollbar{ display: none; }
+  .no-scrollbar{ -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ========= Loading：保留原本但微調質感 ========= */
+  #loading{
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: white; z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease;
+  }
+  .spinner{
+    width: 44px; height: 44px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--brand-wine);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+    box-shadow: 0 10px 24px rgba(17,24,39,.08);
+  }
+  @keyframes spin{ 0%{ transform: rotate(0deg);} 100%{ transform: rotate(360deg);} }
+  .fade-out{ opacity: 0; pointer-events: none; }
+
+  /* ========= Typography ========= */
+  h1,h2,h3{
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  /* ========= Sticky header：更像品牌服務 ========= */
+  header.sticky{
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: saturate(1.2) blur(10px);
+    background: rgba(255,255,255,.92) !important;
+  }
+
+  /* Header 裡的小按鈕：更乾淨 */
+  header button{
+    border: 1px solid var(--border);
+    transition: transform .12s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  }
+  header button:hover{
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+    border-color: var(--border-strong);
+  }
+
+  /* ========= 主要卡片感（你頁面大量用 bg-white + rounded-2xl + shadow-sm） ========= */
+  .bg-white.rounded-2xl.shadow-sm,
+  .bg-white.p-4.rounded-2xl.shadow-sm,
+  .bg-white.p-6.rounded-2xl.shadow-sm{
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm) !important;
+  }
+
+  /* ========= 進度條：更細緻 ========= */
+  #progressBar{
+    border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(234,85,72,.18);
+  }
+
+  /* ========= Input/Select：更不像後台 ========= */
+  input, select, textarea{
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border) !important;
+    background: #fafafa !important;
+    transition: box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color: rgba(234,85,72,.35) !important;
+    box-shadow: 0 0 0 4px rgba(234,85,72,.14) !important;
+    background: #fff !important;
+  }
+  input::placeholder{
+    color: rgba(107,114,128,.8);
+  }
+
+  /* ========= Step 區塊標題左邊色條更一致 ========= */
+  .border-l-4{
+    border-left-width: 5px !important;
+  }
+
+  /* ========= Category / Service / Stylist / Time buttons：不改 HTML，用 selector 精準覆蓋 ========= */
+  /* 類別卡（step1 兩欄） */
+  #categoryList > div{
+    background: rgba(255,255,255,.92);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .14s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    padding: 16px !important;
+  }
+  #categoryList > div:hover{
+    border-color: rgba(234,85,72,.35);
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+    background: #fff;
+  }
+
+  /* 款式列表（step2） */
+  #serviceList > div{
+    background: rgba(255,255,255,.94);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .14s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+  #serviceList > div:hover{
+    border-color: rgba(234,85,72,.35);
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+    background: #fff;
+  }
+  /* 款式價格顏色更穩（用你 wine） */
+  #serviceList > div span:last-child{
+    color: var(--brand-wine) !important;
+  }
+
+  /* 設計師列表（step3） */
+  #stylistList > div{
+    background: rgba(255,255,255,.94);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: transform .14s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+  #stylistList > div:hover{
+    border-color: rgba(234,85,72,.35);
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+    background: #fff;
+  }
+
+  /* 時段按鈕（step4） */
+  #timeSlots button{
+    border-radius: 12px !important;
+    border-color: var(--border) !important;
+    transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+  #timeSlots button:not(.btn-disabled):hover{
+    border-color: rgba(234,85,72,.40) !important;
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+  }
+
+  /* 你 JS 選取時會把 className 換成固定字串；這裡補一個更好看的選取狀態陰影 */
+  #timeSlots button[style*=""], /* 佔位，不影響 */
+  #timeSlots button.bg-\[\#ea5548\]{
+    box-shadow: 0 10px 22px rgba(234,85,72,.22);
+  }
+
+  /* ========= 主 CTA 按鈕更「按下去的感覺」 ========= */
+  .bg-\[\#ea5548\].text-white.font-bold.rounded-xl.shadow-lg,
+  .bg-\[\#ea5548\].text-white.font-bold.rounded-2xl.shadow-xl{
+    transition: transform .12s ease, box-shadow .18s ease, filter .18s ease;
+    box-shadow: 0 12px 26px rgba(234,85,72,.24) !important;
+  }
+  .bg-\[\#ea5548\].text-white.font-bold.rounded-xl.shadow-lg:hover,
+  .bg-\[\#ea5548\].text-white.font-bold.rounded-2xl.shadow-xl:hover{
+    transform: translateY(-1px);
+    filter: brightness(0.98);
+    box-shadow: 0 16px 34px rgba(234,85,72,.30) !important;
+  }
+  .bg-\[\#ea5548\].text-white.font-bold.rounded-xl.shadow-lg:active,
+  .bg-\[\#ea5548\].text-white.font-bold.rounded-2xl.shadow-xl:active{
+    transform: translateY(0px);
+  }
+
+  /* ========= 次要返回按鈕更一致 ========= */
+  button.border.rounded-xl{
+    border-color: var(--border) !important;
+    background: rgba(255,255,255,.92) !important;
+    transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+  button.border.rounded-xl:hover{
+    border-color: var(--border-strong) !important;
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+    background: #fff !important;
+  }
+
+  /* ========= 手機端：更穩 ========= */
+  @media (max-width: 640px){
+    header.p-6{ padding: 16px !important; }
+    h1.text-xl{ font-size: 18px !important; }
+    main.px-4{ padding-left: 14px !important; padding-right: 14px !important; }
+  }
+</style>
