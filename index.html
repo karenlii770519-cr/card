@@ -17,16 +17,27 @@
         /* 隱藏卷軸但保留功能 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* 原生 CSS Loading 樣式 */
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #8F2C2F; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-out { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body class="pb-12">
 
-    <div id="loading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
-        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#8F2C2F] mb-4"></div>
-        <p class="text-[#8F2C2F] font-bold">系統載入中...</p>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p style="color: #8F2C2F; font-weight: bold; font-family: sans-serif;">系統載入中...</p>
     </div>
 
     <div id="app" class="max-w-md mx-auto min-h-screen relative hidden flex flex-col">
+        
+        <div class="w-full">
+            <img src="https://www.dropbox.com/scl/fi/9ixt9eimc4209tpxwt1cm/top.jpg?rlkey=esyfit1y7ob2jm93lzlklv4s9&st=77toiepy&dl=0" 
+                 alt="Banner" 
+                 class="w-full h-auto">
+        </div>
         
         <div class="bg-[#FFF8F0] text-gray-600 text-xs px-4 py-3 border-b border-orange-100 text-center leading-relaxed">
             <p class="font-bold text-[#ea5548] mb-1">【續作優惠】</p>
@@ -138,6 +149,7 @@
         const CATEGORIES = [ {id:'hand',name:'手部光療',icon:'💅'}, {id:'foot',name:'足部光療',icon:'🦶'}, {id:'remove',name:'卸甲',icon:'✨'}, {id:'care',name:'保養',icon:'🌿'} ];
         
         const SERVICES = [
+          // 手部 Hand
           { category: 'hand', id: 'h1', name: '【手部】單色/跳色', price: 500, time: 60 },
           { category: 'hand', id: 'h2', name: '【手部】相簿 $600 款', price: 600, time: 60 },
           { category: 'hand', id: 'h3', name: '【手部】相簿 $700 款', price: 700, time: 60 },
@@ -149,6 +161,8 @@
           { category: 'hand', id: 'h9', name: '【手部】法式/保養', price: 1100, time: 180 },
           { category: 'hand', id: 'h10', name: '【手部】甲片延甲 (10指)', price: 1000, time: 60 },
           { category: 'hand', id: 'h11', name: '【手部】甲片延甲 (5指內)', price: 500, time: 30 },
+          
+          // 足部 Foot
           { category: 'foot', id: 'f1', name: '【足部】單色/跳色', price: 500, time: 60 },
           { category: 'foot', id: 'f2', name: '【足部】相簿 $600 款', price: 600, time: 60 },
           { category: 'foot', id: 'f3', name: '【足部】相簿 $700 款', price: 700, time: 60 },
@@ -156,14 +170,18 @@
           { category: 'foot', id: 'f5', name: '【足部】光療/保養', price: 1100, time: 90 },
           { category: 'foot', id: 'f6', name: '【足部】相簿600/保養', price: 1200, time: 90 },
           { category: 'foot', id: 'f7', name: '【足部】相簿700/保養', price: 1300, time: 90 },
+
+          // 卸甲 Remove
           { category: 'remove', id: 'r1', name: '【卸甲】手/足單卸甲', price: 300, time: 30 },
           { category: 'remove', id: 'r2', name: '【卸甲】延甲卸甲', price: 400, time: 60 },
           { category: 'remove', id: 'r3', name: '【組合】光療單色/卸甲(超過三周或新客)/保養', price: 1400, time: 90 },
           { category: 'remove', id: 'r4', name: '【組合】相簿600/卸甲(超過三周或新客)/保養', price: 1500, time: 90 },
           { category: 'remove', id: 'r5', name: '【組合】相簿700/卸甲(超過三周或新客)/保養', price: 1600, time: 90 },
           { category: 'remove', id: 'r6', name: '【組合】法式/卸甲(超過三周或新客)/保養', price: 1700, time: 180 },
-          { category: 'care', id: 'c1', name: '【保養】手部保養', price: 300, time: 45 },
-          { category: 'care', id: 'c2', name: '【保養】足部修養', price: 600, time: 60 }
+
+          // 保養 Care
+          { category: 'care', id: 'c1', name: '【保養】手部保養', price: 300, time: 30 },
+          { category: 'care', id: 'c2', name: '【保養】足部修養', price: 600, time: 30 }
         ];
 
         const STYLISTS = [ 
@@ -176,42 +194,46 @@
         let currentData = { category:null, service:null, stylist:STYLISTS[0], date:'', time:null, durationSlots: 1, phone:'', userId:'', userImg:'' };
         let bookedTimes = []; 
 
-        window.onload = async function() {
+        // 非同步極速載入
+        window.onload = function() {
             renderCategories(); 
             renderStylists(); 
             
-            // 預設日期設定
             const dateInput = document.getElementById('dateInput');
             dateInput.min = new Date().toISOString().split('T')[0];
             dateInput.addEventListener('change', (e) => handleDateOrStylistChange());
 
-            try {
-                // 嘗試連線 LIFF
-                await liff.init({ liffId: LIFF_ID });
-                if (!liff.isLoggedIn()) { liff.login(); return; }
-                const profile = await liff.getProfile();
-                
-                // 防當機：填寫名字
-                const nameEl = document.getElementById('userName');
-                if(nameEl) nameEl.innerText = profile.displayName;
-                const imgEl = document.getElementById('userImg');
-                if(imgEl && profile.pictureUrl) imgEl.src = profile.pictureUrl;
-                
-                currentData.userId = profile.userId;
+            // 關閉 Loading (淡出)
+            const loadingEl = document.getElementById('loading');
+            loadingEl.classList.add('fade-out');
+            document.getElementById('app').classList.remove('hidden');
 
-                // 成功載入
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-
-            } catch (err) {
-                alert("連線警示：" + err);
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-            }
+            // 背景連線 LIFF
+            initLiffInBackground();
         };
+
+        async function initLiffInBackground() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (liff.isLoggedIn()) {
+                    const profile = await liff.getProfile();
+                    const nameEl = document.getElementById('userName');
+                    if(nameEl) nameEl.innerText = profile.displayName;
+                    const imgEl = document.getElementById('userImg');
+                    if(imgEl && profile.pictureUrl) imgEl.src = profile.pictureUrl;
+                    currentData.userId = profile.userId;
+                }
+            } catch (err) {
+                console.error("LIFF 背景連線失敗", err);
+            }
+        }
 
         // --- 功能邏輯 ---
         async function showMyBookings() {
+            if (!currentData.userId) {
+                alert("系統正在讀取您的會員資料，請稍等 2 秒後再試一次 🙏");
+                return;
+            }
             document.getElementById('mainView').classList.add('hidden');
             document.getElementById('myBookingView').classList.remove('hidden');
             const listDiv = document.getElementById('myBookingList');
@@ -250,7 +272,6 @@
             
             let requiredSlots = 1;
             if (currentData.service) {
-                // 除以 30，算出需要幾格 (例如 60分鐘=2格)
                 requiredSlots = Math.ceil(currentData.service.time / 30);
             }
             currentData.durationSlots = requiredSlots;
@@ -327,7 +348,7 @@
                 date: currentData.date,
                 time: currentData.time,
                 price: currentData.service ? currentData.service.price : 0,
-                userId: currentData.userId,
+                userId: currentData.userId || 'GUEST_NO_LIFF',
                 userImg: document.getElementById('userImg').src || ''
             };
 
@@ -340,7 +361,7 @@
                     headers: {'Content-Type': 'application/json'} 
                 });
                 
-                if (liff.isInClient()) { 
+                if (liff.isInClient() && liff.isLoggedIn()) { 
                     await liff.sendMessages([{
                         type:'text', 
                         text:`【預約成功】\n姓名：${payload.name}\n項目：${payload.service}\n老師：${payload.stylist}\n時間：${payload.date} ${payload.time.split(",")[0]}`
